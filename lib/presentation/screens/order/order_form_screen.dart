@@ -3,6 +3,7 @@ import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:iconsax_flutter/iconsax_flutter.dart";
 import "package:tailor_app/core/constants/measurement_fields.dart";
+import "package:tailor_app/core/enums/gender.dart";
 import "package:tailor_app/core/enums/order_status.dart";
 import "package:tailor_app/core/enums/payment_status.dart";
 import "package:tailor_app/core/enums/staff_role.dart";
@@ -24,8 +25,9 @@ import "package:uuid/uuid.dart";
 
 class OrderFormScreen extends StatefulWidget {
   final Order? order;
+  final String? customerId;
 
-  const OrderFormScreen({super.key, this.order});
+  const OrderFormScreen({super.key, this.order, this.customerId});
 
   @override
   State<OrderFormScreen> createState() => _OrderFormScreenState();
@@ -52,14 +54,22 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   final _quantityCtrl = TextEditingController(text: "1");
   final _totalCtrl = TextEditingController();
   final _advanceCtrl = TextEditingController(text: "0");
+  final _stitchingCostCtrl = TextEditingController();
   DateTime _orderDate = DateTime.now();
   DateTime _deliveryDate = DateTime.now().add(const Duration(days: 7));
+
+  void _onTotalChanged() {
+    if (_isEditing) return;
+    final total = double.tryParse(_totalCtrl.text) ?? 0;
+    _stitchingCostCtrl.text = (total * 0.40).toStringAsFixed(0);
+  }
 
   @override
   void initState() {
     super.initState();
     _customers = CustomerRepositoryImpl().getAllCustomers();
     _staffList = StaffRepositoryImpl().getAllStaff();
+    _totalCtrl.addListener(_onTotalChanged);
 
     if (_isEditing) {
       final o = widget.order!;
@@ -74,9 +84,26 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       _quantityCtrl.text = "${o.quantity}";
       _totalCtrl.text = o.totalAmount.toStringAsFixed(0);
       _advanceCtrl.text = o.advanceAmount.toStringAsFixed(0);
+      _stitchingCostCtrl.text = o.stitchingCost.toStringAsFixed(0);
       _orderDate = o.orderDate;
       _deliveryDate = o.deliveryDate;
       _loadMeasurements(o.customerId);
+    } else if (widget.customerId != null) {
+      _selectedCustomerId = widget.customerId;
+      final customer = _customers.firstWhere(
+        (c) => c.id == widget.customerId,
+        orElse: () => Customer(
+          id: "",
+          name: "",
+          phone: "",
+          gender: Gender.male,
+          createdAt: DateTime.now(),
+        ),
+      );
+      if (customer.id.isNotEmpty) {
+        _selectedCustomerName = customer.name;
+        _loadMeasurements(customer.id);
+      }
     }
   }
 
@@ -90,11 +117,13 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
 
   @override
   void dispose() {
+    _totalCtrl.removeListener(_onTotalChanged);
     _fabricCtrl.dispose();
     _notesCtrl.dispose();
     _quantityCtrl.dispose();
     _totalCtrl.dispose();
     _advanceCtrl.dispose();
+    _stitchingCostCtrl.dispose();
     super.dispose();
   }
 
@@ -126,6 +155,8 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
 
     final total = double.tryParse(_totalCtrl.text) ?? 0;
     final advance = double.tryParse(_advanceCtrl.text) ?? 0;
+    final stitchingCost =
+        double.tryParse(_stitchingCostCtrl.text) ?? (total * 0.40);
     final remaining = total - advance;
 
     PaymentStatus paymentStatus;
@@ -160,6 +191,8 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       createdAt: widget.order?.createdAt ?? DateTime.now(),
       assignedStaffId: _selectedStaffId,
       assignedStaffName: _selectedStaffName,
+      stitchingCost: stitchingCost,
+      isStitcherPaid: widget.order?.isStitcherPaid ?? false,
     );
 
     if (_isEditing) {
@@ -193,6 +226,23 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
           children: [
             _buildCustomerPicker(context),
             const SizedBox(height: 16),
+            if (_selectedCustomerId != null && _measurements.isEmpty) ...[
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(context)
+                      .pushNamed(
+                        "/measurement/form",
+                        arguments: {"customerId": _selectedCustomerId!},
+                      )
+                      .then((_) {
+                        _loadMeasurements(_selectedCustomerId!);
+                      });
+                },
+                icon: const Icon(Icons.add_rounded),
+                label: Text(l10n.addMeasurement),
+              ),
+              const SizedBox(height: 16),
+            ],
             _buildGarmentTypePicker(context),
             const SizedBox(height: 16),
             if (_measurements.isNotEmpty) ...[
@@ -381,6 +431,15 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 16),
+        AppTextField(
+          label: l10n.stitchingCost,
+          controller: _stitchingCostCtrl,
+          keyboardType: TextInputType.number,
+          prefixIcon: const Icon(Iconsax.wallet_money, size: 20),
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          validator: (v) => v == null || v.isEmpty ? l10n.requiredField : null,
         ),
       ],
     );

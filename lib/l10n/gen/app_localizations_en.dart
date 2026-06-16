@@ -69,6 +69,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phone => 'Phone';
 
   @override
+  String get email => 'Email';
+
+  @override
+  String get invalidEmail => 'Enter a valid email address';
+
+  @override
   String get address => 'Address';
 
   @override
@@ -165,7 +171,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whatsappReceipt => 'WhatsApp Receipt';
 
   @override
+  String get emailReceipt => 'Email Receipt';
+
+  @override
+  String get sendReceipt => 'Send Receipt';
+
+  @override
   String get readyForPickup => 'Ready for Pickup';
+
+  @override
+  String get notifyCustomer => 'Notify Customer';
+
+  @override
+  String get selectNotificationMethod => 'Select notification method:';
+
+  @override
+  String get sendViaWhatsApp => 'Send WhatsApp';
+
+  @override
+  String get sendViaEmail => 'Send Email';
+
+  @override
+  String get sendViaBoth => 'Send Both';
+
+  @override
+  String get smtpSettings => 'SMTP Settings (Automatic Email)';
+
+  @override
+  String get smtpHost => 'SMTP Host';
+
+  @override
+  String get smtpPort => 'SMTP Port';
+
+  @override
+  String get senderEmail => 'Sender Email';
+
+  @override
+  String get appPassword => 'App Password';
+
+  @override
+  String get sendAutomatically => 'Send Emails Automatically';
+
+  @override
+  String get smtpConfigRequired =>
+      'Please configure SMTP settings to send automatic emails.';
+
+  @override
+  String get emailSentSuccess => 'Email sent successfully!';
+
+  @override
+  String emailSendFailed(Object error) {
+    return 'Failed to send email: $error';
+  }
+
+  @override
+  String get phoneExistsError =>
+      'A customer with this phone number already exists';
 
   @override
   String get pending => 'Pending';
@@ -356,4 +417,72 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get paymentRequiredBeforeDelivery =>
       'Customer must pay the full amount before the order can be delivered.';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get noNotifications => 'No notifications';
+
+  @override
+  String get noNotificationsSubtitle => 'You are all caught up!';
+
+  @override
+  String get overdueDeliveries => 'Overdue Deliveries';
+
+  @override
+  String get dueToday => 'Due Today';
+
+  @override
+  String get upcomingDeliveries => 'Upcoming Deliveries';
+
+  @override
+  String get overdueReminder => 'Overdue Reminder';
+
+  @override
+  String get deliveryDueToday => 'Delivery Due Today';
+
+  @override
+  String get upcomingDelivery => 'Upcoming Delivery';
+
+  @override
+  String notificationBody(Object garment, Object id, Object name) {
+    return 'Order #$id for $name ($garment) is pending delivery.';
+  }
+
+  @override
+  String get userRole => 'User Role';
+
+  @override
+  String get owner => 'Owner';
+
+  @override
+  String get stitcher => 'Stitcher';
+
+  @override
+  String get selectStitcher => 'Select Stitcher';
+
+  @override
+  String get activeProfile => 'Active Profile';
+
+  @override
+  String get myWork => 'My Work';
+
+  @override
+  String get stitchingCost => 'Stitching Cost';
+
+  @override
+  String get isStitcherPaid => 'Stitcher Paid';
+
+  @override
+  String get markAsPaid => 'Mark as Paid';
+
+  @override
+  String get paymentPending => 'Payment Pending';
+
+  @override
+  String get paymentReceived => 'Payment Received';
+
+  @override
+  String get completedWork => 'Completed Work';
 }

@@ -69,6 +69,12 @@ class AppLocalizationsUr extends AppLocalizations {
   String get phone => 'فون';
 
   @override
+  String get email => 'ای میل';
+
+  @override
+  String get invalidEmail => 'درست ای میل درج کریں';
+
+  @override
   String get address => 'پتہ';
 
   @override
@@ -165,7 +171,61 @@ class AppLocalizationsUr extends AppLocalizations {
   String get whatsappReceipt => 'واٹس ایپ رسید';
 
   @override
+  String get emailReceipt => 'ای میل رسید';
+
+  @override
+  String get sendReceipt => 'رسید بھیجیں';
+
+  @override
   String get readyForPickup => 'تیار برائے حوالگی';
+
+  @override
+  String get notifyCustomer => 'گاہک کو اطلاع دیں';
+
+  @override
+  String get selectNotificationMethod => 'اطلاع دینے کا طریقہ منتخب کریں:';
+
+  @override
+  String get sendViaWhatsApp => 'واٹس ایپ بھیجیں';
+
+  @override
+  String get sendViaEmail => 'ای میل بھیجیں';
+
+  @override
+  String get sendViaBoth => 'دونوں بھیجیں';
+
+  @override
+  String get smtpSettings => 'ای میل کی خودکار ترتیبات';
+
+  @override
+  String get smtpHost => 'میزبانی سرور (SMTP Host)';
+
+  @override
+  String get smtpPort => 'پورٹ (SMTP Port)';
+
+  @override
+  String get senderEmail => 'بھیجنے والے کا ای میل';
+
+  @override
+  String get appPassword => 'ایپ پاس ورڈ';
+
+  @override
+  String get sendAutomatically => 'ای میلز خود بخود بھیجیں';
+
+  @override
+  String get smtpConfigRequired =>
+      'خودکار ای میلز کے لیے براہ کرم ای میل ترتیبات سیٹ کریں۔';
+
+  @override
+  String get emailSentSuccess => 'ای میل کامیابی سے بھیج دی گئی ہے!';
+
+  @override
+  String emailSendFailed(Object error) {
+    return 'ای میل بھیجنے میں ناکامی: $error';
+  }
+
+  @override
+  String get phoneExistsError => 'اس فون نمبر کا گاہک پہلے سے موجود ہے';
 
   @override
   String get pending => 'زیر التوا';
@@ -356,4 +416,72 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get paymentRequiredBeforeDelivery =>
       'آرڈر ڈیلیور کرنے سے پہلے گاہک کو پوری رقم ادا کرنی ہوگی۔';
+
+  @override
+  String get notifications => 'نوٹیفیکیشنز';
+
+  @override
+  String get noNotifications => 'کوئی نوٹیفکیشن نہیں';
+
+  @override
+  String get noNotificationsSubtitle => 'سب کچھ اپ ٹو ڈیٹ ہے!';
+
+  @override
+  String get overdueDeliveries => 'تاخیر شدہ ڈیلیوریز';
+
+  @override
+  String get dueToday => 'آج ڈیلیور کرنا ہے';
+
+  @override
+  String get upcomingDeliveries => 'آنے والی ڈیلیوریز';
+
+  @override
+  String get overdueReminder => 'تاخیر کا ریمائنڈر';
+
+  @override
+  String get deliveryDueToday => 'آج ڈیلیوری ہونی ہے';
+
+  @override
+  String get upcomingDelivery => 'آنے والی ڈیلیوری';
+
+  @override
+  String notificationBody(Object garment, Object id, Object name) {
+    return 'گاہک $name کا آرڈر #$id ($garment) ڈیلیوری کے لیے زیر التوا ہے۔';
+  }
+
+  @override
+  String get userRole => 'صارف کا کردار';
+
+  @override
+  String get owner => 'مالک';
+
+  @override
+  String get stitcher => 'کاریگر';
+
+  @override
+  String get selectStitcher => 'کاریگر منتخب کریں';
+
+  @override
+  String get activeProfile => 'فعال پروفائل';
+
+  @override
+  String get myWork => 'میرا کام';
+
+  @override
+  String get stitchingCost => 'سلائی کی اجرت';
+
+  @override
+  String get isStitcherPaid => 'اجرت ادا ہو گئی';
+
+  @override
+  String get markAsPaid => 'ادائیگی مارک کریں';
+
+  @override
+  String get paymentPending => 'بقایا اجرت';
+
+  @override
+  String get paymentReceived => 'وصول شدہ اجرت';
+
+  @override
+  String get completedWork => 'مکمل شدہ کام';
 }

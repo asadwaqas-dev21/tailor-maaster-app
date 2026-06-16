@@ -23,13 +23,14 @@ class StaffModelAdapter extends TypeAdapter<StaffModel> {
       role: fields[3] as StaffRole,
       isActive: fields[4] as bool,
       createdAt: fields[5] as DateTime,
+      imagePath: fields[6] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, StaffModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -41,7 +42,9 @@ class StaffModelAdapter extends TypeAdapter<StaffModel> {
       ..writeByte(4)
       ..write(obj.isActive)
       ..writeByte(5)
-      ..write(obj.createdAt);
+      ..write(obj.createdAt)
+      ..writeByte(6)
+      ..write(obj.imagePath);
   }
 
   @override

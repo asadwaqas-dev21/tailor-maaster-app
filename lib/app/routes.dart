@@ -14,6 +14,7 @@ import "package:tailor_app/presentation/screens/staff/staff_list_screen.dart";
 import "package:tailor_app/presentation/screens/staff/staff_form_screen.dart";
 import "package:tailor_app/presentation/screens/staff/staff_detail_screen.dart";
 import "package:tailor_app/presentation/screens/report/report_screen.dart";
+import "package:tailor_app/presentation/screens/notification/notification_screen.dart";
 
 class AppRoutes {
   AppRoutes._();
@@ -29,6 +30,7 @@ class AppRoutes {
   static const String staffForm = "/staff/form";
   static const String staffDetail = "/staff/detail";
   static const String report = "/report";
+  static const String notification = "/notification";
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -48,8 +50,12 @@ class AppRoutes {
             CustomerDetailScreen(customerId: customerId));
 
       case orderForm:
-        final order = settings.arguments as Order?;
-        return _slideRoute(OrderFormScreen(order: order));
+        if (settings.arguments is Order) {
+          return _slideRoute(OrderFormScreen(order: settings.arguments as Order));
+        } else if (settings.arguments is String) {
+          return _slideRoute(OrderFormScreen(customerId: settings.arguments as String));
+        }
+        return _slideRoute(const OrderFormScreen());
 
       case orderDetail:
         final orderId = settings.arguments as String;
@@ -77,6 +83,9 @@ class AppRoutes {
 
       case report:
         return _slideRoute(const ReportScreen());
+
+      case notification:
+        return _slideRoute(const NotificationScreen());
 
       default:
         return _fadeRoute(const SplashScreen());

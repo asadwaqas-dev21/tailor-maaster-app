@@ -21,6 +21,8 @@ class Order extends Equatable {
   final DateTime createdAt;
   final String? assignedStaffId;
   final String? assignedStaffName;
+  final double stitchingCost;
+  final bool isStitcherPaid;
 
   const Order({
     required this.id,
@@ -41,6 +43,8 @@ class Order extends Equatable {
     required this.createdAt,
     this.assignedStaffId,
     this.assignedStaffName,
+    this.stitchingCost = 0.0,
+    this.isStitcherPaid = false,
   });
 
   /// Remaining balance
@@ -63,6 +67,10 @@ class Order extends Equatable {
     DateTime? deliveryDate,
     List<String>? photoPaths,
     DateTime? createdAt,
+    String? assignedStaffId,
+    String? assignedStaffName,
+    double? stitchingCost,
+    bool? isStitcherPaid,
   }) {
     return Order(
       id: id ?? this.id,
@@ -81,6 +89,10 @@ class Order extends Equatable {
       deliveryDate: deliveryDate ?? this.deliveryDate,
       photoPaths: photoPaths ?? this.photoPaths,
       createdAt: createdAt ?? this.createdAt,
+      assignedStaffId: assignedStaffId ?? this.assignedStaffId,
+      assignedStaffName: assignedStaffName ?? this.assignedStaffName,
+      stitchingCost: stitchingCost ?? this.stitchingCost,
+      isStitcherPaid: isStitcherPaid ?? this.isStitcherPaid,
     );
   }
 
@@ -104,5 +116,7 @@ class Order extends Equatable {
         createdAt,
         assignedStaffId,
         assignedStaffName,
+        stitchingCost,
+        isStitcherPaid,
       ];
 }

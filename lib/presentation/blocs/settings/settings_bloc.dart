@@ -9,16 +9,23 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<LoadSettings>(_onLoadSettings);
     on<ToggleTheme>(_onToggleTheme);
     on<ChangeLocale>(_onChangeLocale);
+    on<SwitchRole>(_onSwitchRole);
   }
 
   void _onLoadSettings(LoadSettings event, Emitter<SettingsState> emit) {
     final box = HiveService.settingsBox;
     final isDark = box.get("isDarkMode", defaultValue: false) as bool;
     final langCode = box.get("languageCode", defaultValue: "en") as String;
+    final userRole = box.get("userRole", defaultValue: "owner") as String;
+    final selectedStitcherId = box.get("selectedStitcherId") as String?;
+    final selectedStitcherName = box.get("selectedStitcherName") as String?;
 
     emit(SettingsState(
       themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
       locale: Locale(langCode),
+      userRole: userRole,
+      selectedStitcherId: selectedStitcherId,
+      selectedStitcherName: selectedStitcherName,
     ));
   }
 
@@ -31,5 +38,16 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   void _onChangeLocale(ChangeLocale event, Emitter<SettingsState> emit) {
     HiveService.settingsBox.put("languageCode", event.locale.languageCode);
     emit(state.copyWith(locale: event.locale));
+  }
+
+  void _onSwitchRole(SwitchRole event, Emitter<SettingsState> emit) {
+    HiveService.settingsBox.put("userRole", event.role);
+    HiveService.settingsBox.put("selectedStitcherId", event.stitcherId);
+    HiveService.settingsBox.put("selectedStitcherName", event.stitcherName);
+    emit(state.copyWith(
+      userRole: event.role,
+      selectedStitcherId: event.stitcherId,
+      selectedStitcherName: event.stitcherName,
+    ));
   }
 }

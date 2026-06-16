@@ -27,6 +27,12 @@ class CustomerModel extends HiveObject {
   @HiveField(6)
   final DateTime createdAt;
 
+  @HiveField(7)
+  final String? email;
+
+  @HiveField(8)
+  final String? imagePath;
+
   CustomerModel({
     required this.id,
     required this.name,
@@ -35,6 +41,8 @@ class CustomerModel extends HiveObject {
     required this.gender,
     this.notes,
     required this.createdAt,
+    this.email,
+    this.imagePath,
   });
 
   /// Convert to domain entity
@@ -43,10 +51,12 @@ class CustomerModel extends HiveObject {
       id: id,
       name: name,
       phone: phone,
+      email: email,
       address: address,
       gender: gender,
       notes: notes,
       createdAt: createdAt,
+      imagePath: imagePath,
     );
   }
 
@@ -56,10 +66,12 @@ class CustomerModel extends HiveObject {
       id: entity.id,
       name: entity.name,
       phone: entity.phone,
+      email: entity.email,
       address: entity.address,
       gender: entity.gender,
       notes: entity.notes,
       createdAt: entity.createdAt,
+      imagePath: entity.imagePath,
     );
   }
 }

@@ -9,6 +9,7 @@ import "package:tailor_app/core/widgets/app_text_field.dart";
 import "package:tailor_app/domain/entities/customer.dart";
 import "package:tailor_app/presentation/blocs/customer/customer_bloc.dart";
 import "package:tailor_app/presentation/blocs/customer/customer_event.dart";
+import "package:tailor_app/data/repositories/customer_repository_impl.dart";
 import "package:uuid/uuid.dart";
 
 class CustomerFormScreen extends StatefulWidget {
@@ -24,6 +25,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameCtrl;
   late final TextEditingController _phoneCtrl;
+  late final TextEditingController _emailCtrl;
   late final TextEditingController _addressCtrl;
   late final TextEditingController _notesCtrl;
   Gender _gender = Gender.male;
@@ -35,6 +37,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.customer?.name ?? "");
     _phoneCtrl = TextEditingController(text: widget.customer?.phone ?? "");
+    _emailCtrl = TextEditingController(text: widget.customer?.email ?? "");
     _addressCtrl = TextEditingController(text: widget.customer?.address ?? "");
     _notesCtrl = TextEditingController(text: widget.customer?.notes ?? "");
     _gender = widget.customer?.gender ?? Gender.male;
@@ -44,6 +47,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
   void dispose() {
     _nameCtrl.dispose();
     _phoneCtrl.dispose();
+    _emailCtrl.dispose();
     _addressCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
@@ -56,6 +60,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
       id: widget.customer?.id ?? const Uuid().v4(),
       name: _nameCtrl.text.trim(),
       phone: _phoneCtrl.text.trim(),
+      email: _emailCtrl.text.trim().isEmpty ? null : _emailCtrl.text.trim(),
       address: _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
       gender: _gender,
       notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
@@ -98,8 +103,33 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
               controller: _phoneCtrl,
               keyboardType: TextInputType.phone,
               prefixIcon: const Icon(Iconsax.call, size: 20),
-              validator: (v) =>
-                  v == null || v.trim().isEmpty ? l10n.requiredField : null,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return l10n.requiredField;
+                final phone = v.trim();
+                final exists = CustomerRepositoryImpl()
+                    .getAllCustomers()
+                    .any((c) => c.phone == phone && c.id != widget.customer?.id);
+                if (exists) {
+                  return l10n.phoneExistsError;
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              label: "${l10n.email} (${l10n.optional})",
+              controller: _emailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              prefixIcon: const Icon(Iconsax.sms, size: 20),
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return null;
+                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                if (!emailRegex.hasMatch(v.trim())) {
+                  return l10n.invalidEmail;
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
             AppDropdown<Gender>(

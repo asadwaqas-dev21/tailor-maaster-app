@@ -24,13 +24,15 @@ class CustomerModelAdapter extends TypeAdapter<CustomerModel> {
       gender: fields[4] as Gender,
       notes: fields[5] as String?,
       createdAt: fields[6] as DateTime,
+      email: fields[7] as String?,
+      imagePath: fields[8] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, CustomerModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +46,11 @@ class CustomerModelAdapter extends TypeAdapter<CustomerModel> {
       ..writeByte(5)
       ..write(obj.notes)
       ..writeByte(6)
-      ..write(obj.createdAt);
+      ..write(obj.createdAt)
+      ..writeByte(7)
+      ..write(obj.email)
+      ..writeByte(8)
+      ..write(obj.imagePath);
   }
 
   @override

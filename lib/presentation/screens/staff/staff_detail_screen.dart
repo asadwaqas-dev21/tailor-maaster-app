@@ -1,6 +1,9 @@
+import "dart:io";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:iconsax_flutter/iconsax_flutter.dart";
+import "package:image_picker/image_picker.dart";
+import "package:path_provider/path_provider.dart";
 import "package:tailor_app/core/enums/order_status.dart";
 import "package:tailor_app/core/enums/staff_role.dart";
 import "package:tailor_app/core/extensions/context_extensions.dart";
@@ -95,7 +98,7 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildProfileHeader(context, staff),
+          _buildProfileHeader(staff),
           const SizedBox(height: 24),
           _buildAssignedOrdersSection(context),
         ],
@@ -103,22 +106,53 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context, Staff staff) {
+  Widget _buildProfileHeader(Staff staff) {
     final theme = context.theme;
     final initials = staff.name.isNotEmpty ? staff.name[0].toUpperCase() : "?";
+
+    final hasImage = staff.imagePath != null &&
+        staff.imagePath!.isNotEmpty &&
+        File(staff.imagePath!).existsSync();
 
     return Center(
       child: Column(
         children: [
-          CircleAvatar(
-            radius: 40,
-            backgroundColor: staff.role.color.withValues(alpha: 0.12),
-            child: Text(
-              initials,
-              style: theme.textTheme.displaySmall?.copyWith(
-                color: staff.role.color,
-                fontWeight: FontWeight.w700,
-              ),
+          GestureDetector(
+            onTap: () => _showPhotoPickerOptions(staff),
+            child: Stack(
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: staff.role.color.withValues(alpha: 0.12),
+                  backgroundImage: hasImage ? FileImage(File(staff.imagePath!)) : null,
+                  child: hasImage
+                      ? null
+                      : Text(
+                          initials,
+                          style: theme.textTheme.displaySmall?.copyWith(
+                            color: staff.role.color,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: theme.colorScheme.surface, width: 2),
+                    ),
+                    child: const Icon(
+                      Iconsax.camera,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 12),
@@ -184,6 +218,112 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
             ),
           ),
       ],
+    );
+  }
+
+  Future<void> _pickAndSaveImage(ImageSource source, Staff staff) async {
+    final picker = ImagePicker();
+    try {
+      final pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
+      );
+
+      if (pickedFile == null) return;
+
+      final appDir = await getApplicationDocumentsDirectory();
+      final directory = Directory(appDir.path);
+      if (await directory.exists()) {
+        final List<FileSystemEntity> files = directory.listSync();
+        for (final FileSystemEntity file in files) {
+          final filename = file.path.split(Platform.pathSeparator).last;
+          if (filename.startsWith("staff_${staff.id}_") && filename.endsWith(".jpg")) {
+            try {
+              await file.delete();
+            } catch (e) {
+              debugPrint("Failed to delete old staff photo: $e");
+            }
+          }
+        }
+      }
+
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final localImagePath = "${appDir.path}/staff_${staff.id}_$timestamp.jpg";
+
+      final File imageFile = File(pickedFile.path);
+      await imageFile.copy(localImagePath);
+
+      final updatedStaff = staff.copyWith(imagePath: localImagePath);
+      final staffRepo = StaffRepositoryImpl();
+      await staffRepo.updateStaff(updatedStaff);
+
+      if (!mounted) return;
+
+      context.read<StaffBloc>().add(UpdateStaff(updatedStaff));
+      context.showSnackBar("Profile picture updated successfully");
+      _loadData();
+    } catch (e) {
+      debugPrint("Failed to update profile picture: $e");
+      if (mounted) {
+        context.showSnackBar("Failed to update profile picture", isError: true);
+      }
+    }
+  }
+
+  void _showPhotoPickerOptions(Staff staff) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Iconsax.camera),
+                title: const Text("Camera"),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndSaveImage(ImageSource.camera, staff);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Iconsax.gallery),
+                title: const Text("Gallery"),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndSaveImage(ImageSource.gallery, staff);
+                },
+              ),
+              if (staff.imagePath != null && staff.imagePath!.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Iconsax.trash, color: Colors.red),
+                  title: const Text("Remove Photo", style: TextStyle(color: Colors.red)),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+
+                    final file = File(staff.imagePath!);
+                    if (await file.exists()) {
+                      await file.delete();
+                    }
+
+                    final updatedStaff = staff.copyWith(imagePath: "");
+                    final staffRepo = StaffRepositoryImpl();
+                    await staffRepo.updateStaff(updatedStaff);
+
+                    if (!mounted) return;
+
+                    context.read<StaffBloc>().add(UpdateStaff(updatedStaff));
+                    context.showSnackBar("Profile picture removed");
+                    _loadData();
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import "package:flutter/foundation.dart";
 import "package:hive/hive.dart";
 import "package:tailor_app/core/constants/hive_boxes.dart";
 import "package:tailor_app/core/enums/order_status.dart";
@@ -37,9 +38,7 @@ class OrderRepositoryImpl implements OrderRepository {
 
   @override
   List<Order> getOrdersByStatus(OrderStatus status) {
-    final models = _box.values
-        .where((m) => m.status == status)
-        .toList();
+    final models = _box.values.where((m) => m.status == status).toList();
     models.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return models.map((model) => model.toEntity()).toList();
   }
@@ -47,18 +46,31 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   List<Order> getTodayDeliveries() {
     final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    if (kDebugMode) {
+      print("[DEBUG] getTodayDeliveries: now=$now, todayStart=$todayStart");
+    }
     final models = _box.values.where((m) {
       final localDelivery = m.deliveryDate.toLocal();
-      return localDelivery.year == now.year &&
+      final isToday =
+          localDelivery.year == now.year &&
           localDelivery.month == now.month &&
-          localDelivery.day == now.day &&
-          m.status != OrderStatus.delivered;
+          localDelivery.day == now.day;
+      if (kDebugMode) {
+        print(
+          "[DEBUG] Order ID=${m.id}, Customer=${m.customerName}, deliveryDate=${m.deliveryDate}, localDelivery=$localDelivery, isToday=$isToday, status=${m.status}",
+        );
+      }
+      return isToday && m.status != OrderStatus.delivered;
     }).toList();
     return models.map((model) => model.toEntity()).toList();
   }
 
   @override
   List<Order> getPendingOrders() {
+    if (kDebugMode) {
+      print("[DEBUG] getPendingOrders called");
+    }
     final models = _box.values
         .where((m) => m.status != OrderStatus.delivered)
         .toList();
@@ -108,4 +120,7 @@ class OrderRepositoryImpl implements OrderRepository {
 
   @override
   int get orderCount => _box.length;
+
+  @override
+  Stream<void> get orderChanges => _box.watch();
 }

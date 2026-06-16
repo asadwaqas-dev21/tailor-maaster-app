@@ -61,6 +61,12 @@ class OrderModel extends HiveObject {
   @HiveField(17)
   final String? assignedStaffName;
 
+  @HiveField(18)
+  final double? stitchingCost;
+
+  @HiveField(19)
+  final bool? isStitcherPaid;
+
   OrderModel({
     required this.id,
     required this.customerId,
@@ -80,6 +86,8 @@ class OrderModel extends HiveObject {
     required this.createdAt,
     this.assignedStaffId,
     this.assignedStaffName,
+    this.stitchingCost,
+    this.isStitcherPaid,
   });
 
   /// Convert to domain entity
@@ -103,6 +111,8 @@ class OrderModel extends HiveObject {
       createdAt: createdAt,
       assignedStaffId: assignedStaffId,
       assignedStaffName: assignedStaffName,
+      stitchingCost: stitchingCost ?? (totalAmount * 0.40),
+      isStitcherPaid: isStitcherPaid ?? false,
     );
   }
 
@@ -125,6 +135,10 @@ class OrderModel extends HiveObject {
       deliveryDate: entity.deliveryDate,
       photoPaths: List<String>.from(entity.photoPaths),
       createdAt: entity.createdAt,
+      assignedStaffId: entity.assignedStaffId,
+      assignedStaffName: entity.assignedStaffName,
+      stitchingCost: entity.stitchingCost,
+      isStitcherPaid: entity.isStitcherPaid,
     );
   }
 }

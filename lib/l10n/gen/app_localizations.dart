@@ -218,6 +218,18 @@ abstract class AppLocalizations {
   /// **'Phone'**
   String get phone;
 
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// No description provided for @invalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address'**
+  String get invalidEmail;
+
   /// No description provided for @address.
   ///
   /// In en, this message translates to:
@@ -404,11 +416,113 @@ abstract class AppLocalizations {
   /// **'WhatsApp Receipt'**
   String get whatsappReceipt;
 
+  /// No description provided for @emailReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Receipt'**
+  String get emailReceipt;
+
+  /// No description provided for @sendReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Receipt'**
+  String get sendReceipt;
+
   /// No description provided for @readyForPickup.
   ///
   /// In en, this message translates to:
   /// **'Ready for Pickup'**
   String get readyForPickup;
+
+  /// No description provided for @notifyCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify Customer'**
+  String get notifyCustomer;
+
+  /// No description provided for @selectNotificationMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Select notification method:'**
+  String get selectNotificationMethod;
+
+  /// No description provided for @sendViaWhatsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Send WhatsApp'**
+  String get sendViaWhatsApp;
+
+  /// No description provided for @sendViaEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Email'**
+  String get sendViaEmail;
+
+  /// No description provided for @sendViaBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Both'**
+  String get sendViaBoth;
+
+  /// No description provided for @smtpSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'SMTP Settings (Automatic Email)'**
+  String get smtpSettings;
+
+  /// No description provided for @smtpHost.
+  ///
+  /// In en, this message translates to:
+  /// **'SMTP Host'**
+  String get smtpHost;
+
+  /// No description provided for @smtpPort.
+  ///
+  /// In en, this message translates to:
+  /// **'SMTP Port'**
+  String get smtpPort;
+
+  /// No description provided for @senderEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Sender Email'**
+  String get senderEmail;
+
+  /// No description provided for @appPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'App Password'**
+  String get appPassword;
+
+  /// No description provided for @sendAutomatically.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Emails Automatically'**
+  String get sendAutomatically;
+
+  /// No description provided for @smtpConfigRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please configure SMTP settings to send automatic emails.'**
+  String get smtpConfigRequired;
+
+  /// No description provided for @emailSentSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Email sent successfully!'**
+  String get emailSentSuccess;
+
+  /// No description provided for @emailSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send email: {error}'**
+  String emailSendFailed(Object error);
+
+  /// No description provided for @phoneExistsError.
+  ///
+  /// In en, this message translates to:
+  /// **'A customer with this phone number already exists'**
+  String get phoneExistsError;
 
   /// No description provided for @pending.
   ///
@@ -787,6 +901,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Customer must pay the full amount before the order can be delivered.'**
   String get paymentRequiredBeforeDelivery;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @noNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications'**
+  String get noNotifications;
+
+  /// No description provided for @noNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You are all caught up!'**
+  String get noNotificationsSubtitle;
+
+  /// No description provided for @overdueDeliveries.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue Deliveries'**
+  String get overdueDeliveries;
+
+  /// No description provided for @dueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Today'**
+  String get dueToday;
+
+  /// No description provided for @upcomingDeliveries.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming Deliveries'**
+  String get upcomingDeliveries;
+
+  /// No description provided for @overdueReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue Reminder'**
+  String get overdueReminder;
+
+  /// No description provided for @deliveryDueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Due Today'**
+  String get deliveryDueToday;
+
+  /// No description provided for @upcomingDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming Delivery'**
+  String get upcomingDelivery;
+
+  /// No description provided for @notificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Order #{id} for {name} ({garment}) is pending delivery.'**
+  String notificationBody(Object garment, Object id, Object name);
+
+  /// No description provided for @userRole.
+  ///
+  /// In en, this message translates to:
+  /// **'User Role'**
+  String get userRole;
+
+  /// No description provided for @owner.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner'**
+  String get owner;
+
+  /// No description provided for @stitcher.
+  ///
+  /// In en, this message translates to:
+  /// **'Stitcher'**
+  String get stitcher;
+
+  /// No description provided for @selectStitcher.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Stitcher'**
+  String get selectStitcher;
+
+  /// No description provided for @activeProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Profile'**
+  String get activeProfile;
+
+  /// No description provided for @myWork.
+  ///
+  /// In en, this message translates to:
+  /// **'My Work'**
+  String get myWork;
+
+  /// No description provided for @stitchingCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Stitching Cost'**
+  String get stitchingCost;
+
+  /// No description provided for @isStitcherPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Stitcher Paid'**
+  String get isStitcherPaid;
+
+  /// No description provided for @markAsPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Paid'**
+  String get markAsPaid;
+
+  /// No description provided for @paymentPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Pending'**
+  String get paymentPending;
+
+  /// No description provided for @paymentReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Received'**
+  String get paymentReceived;
+
+  /// No description provided for @completedWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed Work'**
+  String get completedWork;
 }
 
 class _AppLocalizationsDelegate

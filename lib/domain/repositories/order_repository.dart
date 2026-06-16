@@ -37,4 +37,7 @@ abstract class OrderRepository {
 
   /// Get total order count
   int get orderCount;
+
+  /// Stream of changes to the orders repository
+  Stream<void> get orderChanges;
 }

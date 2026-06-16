@@ -24,6 +24,9 @@ class StaffModel extends HiveObject {
   @HiveField(5)
   DateTime createdAt;
 
+  @HiveField(6)
+  String? imagePath;
+
   StaffModel({
     required this.id,
     required this.name,
@@ -31,6 +34,7 @@ class StaffModel extends HiveObject {
     required this.role,
     required this.isActive,
     required this.createdAt,
+    this.imagePath,
   });
 
   factory StaffModel.fromEntity(Staff staff) {
@@ -41,6 +45,7 @@ class StaffModel extends HiveObject {
       role: staff.role,
       isActive: staff.isActive,
       createdAt: staff.createdAt,
+      imagePath: staff.imagePath,
     );
   }
 
@@ -52,6 +57,7 @@ class StaffModel extends HiveObject {
       role: role,
       isActive: isActive,
       createdAt: createdAt,
+      imagePath: imagePath,
     );
   }
 }

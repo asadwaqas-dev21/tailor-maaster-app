@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import "dart:io";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:iconsax_flutter/iconsax_flutter.dart";
@@ -100,6 +101,10 @@ class _CustomerTile extends StatelessWidget {
         ? customer.name[0].toUpperCase()
         : "?";
 
+    final hasImage = customer.imagePath != null &&
+        customer.imagePath!.isNotEmpty &&
+        File(customer.imagePath!).existsSync();
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
@@ -111,13 +116,16 @@ class _CustomerTile extends StatelessWidget {
             ),
         leading: CircleAvatar(
           backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
-          child: Text(
-            initials,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          backgroundImage: hasImage ? FileImage(File(customer.imagePath!)) : null,
+          child: hasImage
+              ? null
+              : Text(
+                  initials,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
         ),
         title: Text(customer.name, style: theme.textTheme.titleSmall),
         subtitle: Text(customer.phone, style: theme.textTheme.bodySmall),

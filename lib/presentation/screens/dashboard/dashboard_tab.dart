@@ -21,81 +21,147 @@ class DashboardTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppConstants.appName),
-        actions: [
-          IconButton(
-            icon: const Icon(Iconsax.chart_21),
-            onPressed: () => Navigator.of(context).pushNamed("/report"),
-          ),
-          IconButton(icon: const Icon(Iconsax.notification), onPressed: () {}),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.of(context)
-            .pushNamed("/order/form")
-            .then(
-              // ignore: use_build_context_synchronously
-              (_) => context.read<DashboardBloc>().add(const LoadDashboard()),
-            ),
-        child: const Icon(Icons.add_rounded),
-      ),
-      body: BlocBuilder<DashboardBloc, DashboardState>(
-        builder: (context, state) {
-          if (state is DashboardLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is DashboardError) {
-            return Center(child: Text(state.message));
-          }
-          if (state is DashboardLoaded) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<DashboardBloc>().add(const LoadDashboard());
-              },
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _buildSummaryGrid(context, state),
-                  const SizedBox(height: 24),
-                  _buildSectionHeader(
-                    context,
-                    title: l10n.todayDeliveries,
-                    count: state.todayDeliveries.length,
-                  ),
-                  const SizedBox(height: 8),
-                  if (state.todayDeliveries.isEmpty)
-                    _buildMiniEmpty(context, l10n.todayDeliveries)
-                  else
-                    ...state.todayDeliveries.map(
-                      (o) => _buildOrderTile(context, o),
+    return BlocBuilder<DashboardBloc, DashboardState>(
+      builder: (context, state) {
+        final isStitcher = state is DashboardLoaded && state.userRole == "stitcher";
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(isStitcher ? "${AppConstants.appName} (${l10n.stitcher})" : AppConstants.appName),
+            actions: isStitcher
+                ? null
+                : [
+                    IconButton(
+                      icon: const Icon(Iconsax.chart_21),
+                      onPressed: () => Navigator.of(context).pushNamed("/report"),
                     ),
-                  const SizedBox(height: 24),
-                  _buildSectionHeader(
-                    context,
-                    title: l10n.pendingOrders,
-                    count: state.pendingOrders.length,
+                    IconButton(
+                      icon: const Icon(Iconsax.notification),
+                      onPressed: () => Navigator.of(context).pushNamed("/notification"),
+                    ),
+                  ],
+          ),
+          floatingActionButton: isStitcher
+              ? null
+              : FloatingActionButton(
+                  onPressed: () => Navigator.of(context)
+                      .pushNamed("/order/form")
+                      .then(
+                        // ignore: use_build_context_synchronously
+                        (_) => context.read<DashboardBloc>().add(const LoadDashboard()),
+                      ),
+                  child: const Icon(Icons.add_rounded),
+                ),
+          body: BlocBuilder<DashboardBloc, DashboardState>(
+            builder: (context, state) {
+              if (state is DashboardLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (state is DashboardError) {
+                return Center(child: Text(state.message));
+              }
+              if (state is DashboardLoaded) {
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<DashboardBloc>().add(const LoadDashboard());
+                  },
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      _buildSummaryGrid(context, state),
+                      const SizedBox(height: 24),
+                      if (isStitcher) ...[
+                        _buildSectionHeader(
+                          context,
+                          title: l10n.myWork,
+                          count: state.stitcherAssignedOrders.length,
+                        ),
+                        const SizedBox(height: 8),
+                        if (state.stitcherAssignedOrders.isEmpty)
+                          _buildMiniEmpty(context, l10n.myWork)
+                        else
+                          ...state.stitcherAssignedOrders.map(
+                            (o) => _buildOrderTile(context, o),
+                          ),
+                      ] else ...[
+                        _buildSectionHeader(
+                          context,
+                          title: l10n.recentOrders,
+                          count: state.recentOrders.length,
+                        ),
+                        const SizedBox(height: 8),
+                        if (state.recentOrders.isEmpty)
+                          _buildMiniEmpty(context, l10n.recentOrders)
+                        else
+                          ...state.recentOrders.map(
+                            (o) => _buildOrderTile(context, o),
+                          ),
+                        const SizedBox(height: 24),
+                        _buildSectionHeader(
+                          context,
+                          title: l10n.pendingOrders,
+                          count: state.pendingOrders.length,
+                        ),
+                        const SizedBox(height: 8),
+                        if (state.pendingOrders.isEmpty)
+                          _buildMiniEmpty(context, l10n.pendingOrders)
+                        else
+                          ...state.pendingOrders
+                              .take(5)
+                              .map((o) => _buildOrderTile(context, o)),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  if (state.pendingOrders.isEmpty)
-                    _buildMiniEmpty(context, l10n.pendingOrders)
-                  else
-                    ...state.pendingOrders
-                        .take(5)
-                        .map((o) => _buildOrderTile(context, o)),
-                ],
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
-      ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        );
+      },
     );
   }
 
   Widget _buildSummaryGrid(BuildContext context, DashboardLoaded state) {
     final l10n = context.l10n;
+
+    if (state.userRole == "stitcher") {
+      return GridView.count(
+        crossAxisCount: 2,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 1.2,
+        children: [
+          SummaryCard(
+            title: l10n.completedWork,
+            value: "${state.stitcherCompletedOrders}",
+            icon: Iconsax.box_tick,
+            color: AppColors.success,
+          ),
+          SummaryCard(
+            title: l10n.totalOrders,
+            value: "${state.totalOrders}",
+            icon: Iconsax.clipboard_text,
+            color: AppColors.info,
+          ),
+          CurrencySummaryCard(
+            title: l10n.paymentPending,
+            amount: state.stitcherPendingPayment,
+            icon: Iconsax.money_remove,
+            color: AppColors.danger,
+          ),
+          CurrencySummaryCard(
+            title: l10n.paymentReceived,
+            amount: state.stitcherReceivedPayment,
+            icon: Iconsax.money_tick,
+            color: AppColors.success,
+          ),
+        ],
+      );
+    }
+
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -105,9 +171,9 @@ class DashboardTab extends StatelessWidget {
       childAspectRatio: 1.2,
       children: [
         SummaryCard(
-          title: l10n.todayDeliveries,
-          value: "${state.todayDeliveries.length}",
-          icon: Iconsax.truck_fast,
+          title: l10n.customers,
+          value: "${state.totalCustomers}",
+          icon: Iconsax.people,
           color: AppColors.info,
         ),
         SummaryCard(
@@ -201,7 +267,9 @@ class DashboardTab extends StatelessWidget {
               ),
             ),
             StatusBadge(
-              label: context.isUrdu ? order.status.labelUr : order.status.labelEn,
+              label: context.isUrdu
+                  ? order.status.labelUr
+                  : order.status.labelEn,
               color: order.status.color,
             ),
           ],

@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import "dart:io";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:iconsax_flutter/iconsax_flutter.dart";
@@ -78,6 +79,10 @@ class _StaffTile extends StatelessWidget {
     final theme = context.theme;
     final initials = staff.name.isNotEmpty ? staff.name[0].toUpperCase() : "?";
 
+    final hasImage = staff.imagePath != null &&
+        staff.imagePath!.isNotEmpty &&
+        File(staff.imagePath!).existsSync();
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
@@ -87,13 +92,16 @@ class _StaffTile extends StatelessWidget {
             .then((_) => context.read<StaffBloc>().add(const LoadStaff())),
         leading: CircleAvatar(
           backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
-          child: Text(
-            initials,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          backgroundImage: hasImage ? FileImage(File(staff.imagePath!)) : null,
+          child: hasImage
+              ? null
+              : Text(
+                  initials,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
         ),
         title: Text(staff.name, style: theme.textTheme.titleSmall),
         subtitle: Text(staff.phone, style: theme.textTheme.bodySmall),

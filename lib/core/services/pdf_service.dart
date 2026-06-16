@@ -244,7 +244,7 @@ class PdfService {
         pw.Divider(),
         pw.SizedBox(height: 8),
         pw.Text(
-          "Thank you for your business!",
+          "Thank you for your Order",
           style: pw.TextStyle(font: ttf, fontSize: 14),
         ),
         pw.SizedBox(height: 4),

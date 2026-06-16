@@ -1,7 +1,7 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = "TailorPro";
+  static const String appName = "TailorSoft";
   static const String appVersion = "1.0.0";
 
   // Currency

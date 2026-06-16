@@ -1,3 +1,4 @@
+import "dart:async";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:tailor_app/domain/repositories/order_repository.dart";
 import "package:tailor_app/presentation/blocs/order/order_event.dart";
@@ -5,6 +6,7 @@ import "package:tailor_app/presentation/blocs/order/order_state.dart";
 
 class OrderBloc extends Bloc<OrderEvent, OrderState> {
   final OrderRepository _repository;
+  StreamSubscription? _orderSubscription;
 
   OrderBloc({required this._repository}) : super(const OrderInitial()) {
     on<LoadOrders>(_onLoadOrders);
@@ -13,6 +15,21 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     on<UpdateOrder>(_onUpdateOrder);
     on<UpdateOrderStatus>(_onUpdateOrderStatus);
     on<DeleteOrder>(_onDeleteOrder);
+
+    _orderSubscription = _repository.orderChanges.listen((_) {
+      final currentState = state;
+      if (currentState is OrderLoaded) {
+        add(FilterOrders(status: currentState.filterStatus));
+      } else {
+        add(const LoadOrders());
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _orderSubscription?.cancel();
+    return super.close();
   }
 
   void _onLoadOrders(LoadOrders event, Emitter<OrderState> emit) {

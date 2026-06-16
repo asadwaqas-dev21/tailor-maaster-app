@@ -24,3 +24,18 @@ class ChangeLocale extends SettingsEvent {
   @override
   List<Object?> get props => [locale];
 }
+
+class SwitchRole extends SettingsEvent {
+  final String role;
+  final String? stitcherId;
+  final String? stitcherName;
+
+  const SwitchRole({
+    required this.role,
+    this.stitcherId,
+    this.stitcherName,
+  });
+
+  @override
+  List<Object?> get props => [role, stitcherId, stitcherName];
+}

@@ -29,7 +29,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
     final lowerQuery = query.toLowerCase();
     final models = _box.values.where((m) {
       return m.name.toLowerCase().contains(lowerQuery) ||
-          m.phone.contains(lowerQuery);
+          m.phone.contains(lowerQuery) ||
+          (m.email?.toLowerCase().contains(lowerQuery) ?? false);
     }).toList();
     models.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return models.map((model) => model.toEntity()).toList();

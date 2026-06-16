@@ -1,7 +1,11 @@
+import "dart:io";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:iconsax_flutter/iconsax_flutter.dart";
+import "package:image_picker/image_picker.dart";
+import "package:path_provider/path_provider.dart";
 import "package:tailor_app/core/constants/app_constants.dart";
+import "package:tailor_app/core/services/hive_service.dart";
 import "package:tailor_app/core/constants/measurement_fields.dart";
 import "package:tailor_app/core/enums/order_status.dart";
 import "package:tailor_app/core/extensions/context_extensions.dart";
@@ -71,6 +75,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     final l10n = context.l10n;
     final theme = context.theme;
 
+    final settingsBox = HiveService.settingsBox;
+    final userRole = settingsBox.get("userRole", defaultValue: "owner") as String;
+    final isOwner = userRole == "owner";
+
     if (_customer == null) {
       return Scaffold(
         appBar: AppBar(),
@@ -83,23 +91,25 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.customerDetails),
-        actions: [
-          IconButton(
-            icon: const Icon(Iconsax.edit_2),
-            onPressed: () => Navigator.of(context)
-                .pushNamed("/customer/form", arguments: customer)
-                .then((_) => _loadData()),
-          ),
-          IconButton(
-            icon: Icon(Iconsax.trash, color: theme.colorScheme.error),
-            onPressed: _deleteCustomer,
-          ),
-        ],
+        actions: isOwner
+            ? [
+                IconButton(
+                  icon: const Icon(Iconsax.edit_2),
+                  onPressed: () => Navigator.of(context)
+                      .pushNamed("/customer/form", arguments: customer)
+                      .then((_) => _loadData()),
+                ),
+                IconButton(
+                  icon: Icon(Iconsax.trash, color: theme.colorScheme.error),
+                  onPressed: _deleteCustomer,
+                ),
+              ]
+            : null,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildProfileHeader(context, customer),
+          _buildProfileHeader(customer),
           const SizedBox(height: 16),
           _buildInfoSection(context, customer),
           const SizedBox(height: 24),
@@ -108,21 +118,30 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           _buildOrdersSection(context),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.of(context)
-            .pushNamed(
-              "/measurement/form",
-              arguments: {"customerId": customer.id},
+      floatingActionButton: isOwner
+          ? FloatingActionButton(
+              heroTag: "customerDetailOrderFab",
+              onPressed: () => Navigator.of(context)
+                  .pushNamed(
+                    "/order/form",
+                    arguments: customer.id,
+                  )
+                  .then((_) => _loadData()),
+              child: const Icon(Icons.add_rounded),
             )
-            .then((_) => _loadData()),
-        icon: const Icon(Iconsax.ruler),
-        label: Text(l10n.addMeasurement),
-      ),
+          : null,
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context, Customer customer) {
+  Widget _buildProfileHeader(Customer customer) {
     final theme = context.theme;
+    final settingsBox = HiveService.settingsBox;
+    final isOwner = settingsBox.get("userRole", defaultValue: "owner") == "owner";
+
+    final hasImage = customer.imagePath != null &&
+        customer.imagePath!.isNotEmpty &&
+        File(customer.imagePath!).existsSync();
+
     final initials = customer.name.isNotEmpty
         ? customer.name[0].toUpperCase()
         : "?";
@@ -130,15 +149,43 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     return Center(
       child: Column(
         children: [
-          CircleAvatar(
-            radius: 40,
-            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
-            child: Text(
-              initials,
-              style: theme.textTheme.displaySmall?.copyWith(
-                color: theme.colorScheme.primary,
-                fontWeight: FontWeight.w700,
-              ),
+          GestureDetector(
+            onTap: isOwner ? () => _showPhotoPickerOptions(customer) : null,
+            child: Stack(
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
+                  backgroundImage: hasImage ? FileImage(File(customer.imagePath!)) : null,
+                  child: hasImage
+                      ? null
+                      : Text(
+                          initials,
+                          style: theme.textTheme.displaySmall?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                ),
+                if (isOwner)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: theme.colorScheme.surface, width: 2),
+                      ),
+                      child: const Icon(
+                        Iconsax.camera,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(height: 12),
@@ -146,6 +193,126 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           const SizedBox(height: 4),
           Text(customer.phone, style: theme.textTheme.bodyMedium),
         ],
+      ),
+    );
+  }
+
+  Future<void> _pickAndSaveImage(ImageSource source, Customer customer) async {
+    final picker = ImagePicker();
+    try {
+      final pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
+      );
+
+      if (pickedFile == null) return;
+
+      final appDir = await getApplicationDocumentsDirectory();
+
+      // Delete old photo files matching customer_<id>_*.jpg to save storage space
+      final directory = Directory(appDir.path);
+      if (await directory.exists()) {
+        final List<FileSystemEntity> files = directory.listSync();
+        for (final FileSystemEntity file in files) {
+          final filename = file.path.split(Platform.pathSeparator).last;
+          if (filename.startsWith("customer_${customer.id}_") && filename.endsWith(".jpg")) {
+            try {
+              await file.delete();
+            } catch (e) {
+              debugPrint("Failed to delete old customer photo: $e");
+            }
+          }
+        }
+      }
+
+      // Copy to new unique file name
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final localImagePath = "${appDir.path}/customer_${customer.id}_$timestamp.jpg";
+
+      final File imageFile = File(pickedFile.path);
+      await imageFile.copy(localImagePath);
+
+      // Update customer object
+      final updatedCustomer = customer.copyWith(imagePath: localImagePath);
+
+      // Persist in Hive
+      final customerRepo = CustomerRepositoryImpl();
+      await customerRepo.updateCustomer(updatedCustomer);
+
+      if (!mounted) return;
+
+      // Trigger BLoC update to keep app synchronized
+      context.read<CustomerBloc>().add(UpdateCustomer(updatedCustomer));
+      context.showSnackBar("Profile picture updated successfully");
+
+      // Reload UI state
+      _loadData();
+    } catch (e) {
+      debugPrint("Failed to update profile picture: $e");
+      if (mounted) {
+        context.showSnackBar("Failed to update profile picture", isError: true);
+      }
+    }
+  }
+
+  void _showPhotoPickerOptions(Customer customer) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Iconsax.camera),
+                title: const Text("Camera"),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndSaveImage(ImageSource.camera, customer);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Iconsax.gallery),
+                title: const Text("Gallery"),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickAndSaveImage(ImageSource.gallery, customer);
+                },
+              ),
+              if (customer.imagePath != null && customer.imagePath!.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Iconsax.trash, color: Colors.red),
+                  title: const Text("Remove Photo", style: TextStyle(color: Colors.red)),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+
+                    // Delete the physical file
+                    final file = File(customer.imagePath!);
+                    if (await file.exists()) {
+                      await file.delete();
+                    }
+
+                    // Reset path in DB
+                    final updatedCustomer = customer.copyWith(imagePath: "");
+                    final customerRepo = CustomerRepositoryImpl();
+                    await customerRepo.updateCustomer(updatedCustomer);
+
+                    if (!mounted) return;
+
+                    // Notify BLoC
+                    context.read<CustomerBloc>().add(UpdateCustomer(updatedCustomer));
+                    context.showSnackBar("Profile picture removed");
+
+                    // Reload
+                    _loadData();
+                  },
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -166,6 +333,13 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 Iconsax.location,
                 l10n.address,
                 customer.address!,
+              ),
+            if (customer.email != null && customer.email!.isNotEmpty)
+              _infoRow(
+                theme,
+                Iconsax.sms,
+                l10n.email,
+                customer.email!,
               ),
             _infoRow(
               theme,
@@ -198,16 +372,49 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   Widget _buildMeasurementsSection(BuildContext context) {
     final l10n = context.l10n;
     final theme = context.theme;
+    final isOwner = HiveService.settingsBox.get("userRole", defaultValue: "owner") == "owner";
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.measurements, style: theme.textTheme.titleMedium),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(l10n.measurements, style: theme.textTheme.titleMedium),
+            if (isOwner)
+              IconButton(
+                icon: const Icon(Icons.add_rounded),
+                onPressed: () => Navigator.of(context)
+                    .pushNamed(
+                      "/measurement/form",
+                      arguments: {"customerId": widget.customerId},
+                    )
+                    .then((_) => _loadData()),
+              ),
+          ],
+        ),
         const SizedBox(height: 8),
         if (_measurements.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(l10n.noMeasurements, style: theme.textTheme.bodySmall),
+            child: isOwner
+                ? Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => Navigator.of(context)
+                              .pushNamed(
+                                "/measurement/form",
+                                arguments: {"customerId": widget.customerId},
+                              )
+                              .then((_) => _loadData()),
+                          icon: const Icon(Icons.add_rounded),
+                          label: Text(l10n.addMeasurement),
+                        ),
+                      ),
+                    ],
+                  )
+                : Text(l10n.noMeasurements, style: theme.textTheme.bodySmall),
           )
         else
           ..._measurements.map((m) {
@@ -222,16 +429,18 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   "${m.fields.length} measurements • ${m.createdAt.formatted}",
                   style: theme.textTheme.bodySmall,
                 ),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => Navigator.of(context)
-                    .pushNamed(
-                      "/measurement/form",
-                      arguments: {
-                        "customerId": widget.customerId,
-                        "measurement": m,
-                      },
-                    )
-                    .then((_) => _loadData()),
+                trailing: isOwner ? const Icon(Icons.chevron_right_rounded) : null,
+                onTap: isOwner
+                    ? () => Navigator.of(context)
+                        .pushNamed(
+                          "/measurement/form",
+                          arguments: {
+                            "customerId": widget.customerId,
+                            "measurement": m,
+                          },
+                        )
+                        .then((_) => _loadData())
+                    : null,
               ),
             );
           }),
