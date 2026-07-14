@@ -37,13 +37,15 @@ class OrderModelAdapter extends TypeAdapter<OrderModel> {
       assignedStaffName: fields[17] as String?,
       stitchingCost: fields[18] as double?,
       isStitcherPaid: fields[19] as bool?,
+      tokenCode: fields[20] as String?,
+      isRush: fields[21] as bool?,
     );
   }
 
   @override
   void write(BinaryWriter writer, OrderModel obj) {
     writer
-      ..writeByte(20)
+      ..writeByte(22)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -83,7 +85,11 @@ class OrderModelAdapter extends TypeAdapter<OrderModel> {
       ..writeByte(18)
       ..write(obj.stitchingCost)
       ..writeByte(19)
-      ..write(obj.isStitcherPaid);
+      ..write(obj.isStitcherPaid)
+      ..writeByte(20)
+      ..write(obj.tokenCode)
+      ..writeByte(21)
+      ..write(obj.isRush);
   }
 
   @override

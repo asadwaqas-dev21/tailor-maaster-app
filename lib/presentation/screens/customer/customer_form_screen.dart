@@ -29,6 +29,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
   late final TextEditingController _addressCtrl;
   late final TextEditingController _notesCtrl;
   Gender _gender = Gender.male;
+  bool _isRegular = false;
 
   bool get _isEditing => widget.customer != null;
 
@@ -41,6 +42,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
     _addressCtrl = TextEditingController(text: widget.customer?.address ?? "");
     _notesCtrl = TextEditingController(text: widget.customer?.notes ?? "");
     _gender = widget.customer?.gender ?? Gender.male;
+    _isRegular = widget.customer?.isRegular ?? false;
   }
 
   @override
@@ -65,6 +67,8 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
       gender: _gender,
       notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
       createdAt: widget.customer?.createdAt ?? DateTime.now(),
+      imagePath: widget.customer?.imagePath,
+      isRegular: _isRegular,
     );
 
     if (_isEditing) {
@@ -157,7 +161,15 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
               prefixIcon: const Icon(Iconsax.note_1, size: 20),
               maxLines: 3,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text("Regular grahak"),
+              subtitle: const Text("Naap book pe Regular badge"),
+              value: _isRegular,
+              onChanged: (v) => setState(() => _isRegular = v),
+            ),
+            const SizedBox(height: 24),
             AppButton(
               label: l10n.save,
               icon: Iconsax.tick_circle,

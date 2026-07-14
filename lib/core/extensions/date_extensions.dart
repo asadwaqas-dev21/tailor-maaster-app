@@ -41,13 +41,22 @@ extension DateExtensions on DateTime {
     return target.difference(today).inDays;
   }
 
-  /// Relative time description
+  /// Relative time description (Roman Urdu — matches Darzi mockup)
   String get relative {
     final days = daysRemaining;
-    if (days == 0) return "Today";
-    if (days == 1) return "Tomorrow";
-    if (days == -1) return "Yesterday";
-    if (days > 0) return "In $days days";
-    return "${days.abs()} days ago";
+    if (days == 0) return "Aaj";
+    if (days == 1) return "Kal";
+    if (days == -1) return "Kal gaya";
+    if (days > 0 && days <= 7) return DateFormat("d MMM").format(toLocal());
+    if (days > 0) return DateFormat("d MMMM").format(toLocal());
+    return "${days.abs()} din pehle";
+  }
+
+  /// Rush due label e.g. "Kal shaam"
+  String get rushRelative {
+    final days = daysRemaining;
+    if (days == 0) return "Aaj shaam";
+    if (days == 1) return "Kal shaam";
+    return relative;
   }
 }

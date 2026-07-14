@@ -1,108 +1,105 @@
 class MeasurementFields {
   MeasurementFields._();
 
+  /// Garment chips shown in Naap Book (matches Darzi mockup).
   static const Map<String, List<MeasurementFieldDef>> categories = {
     "shalwar_kameez": _shalwarKameez,
-    "mens_suit": _mensSuit,
     "kurta": _kurta,
     "waistcoat": _waistcoat,
-    "pants": _pants,
-    "shirt": _shirt,
+    "pant_shirt": _pantShirt,
+    "mens_suit": _mensSuit,
     "womens_dress": _womensDress,
   };
 
   static const Map<String, String> categoryLabelsEn = {
     "shalwar_kameez": "Shalwar Kameez",
-    "mens_suit": "Men's Suit",
     "kurta": "Kurta",
     "waistcoat": "Waistcoat",
-    "pants": "Pants",
-    "shirt": "Shirt",
-    "womens_dress": "Women's Dress",
+    "pant_shirt": "Pant-shirt",
+    "mens_suit": "Men's Suit",
+    "womens_dress": "Ladies suit",
   };
 
   static const Map<String, String> categoryLabelsUr = {
     "shalwar_kameez": "شلوار قمیض",
-    "mens_suit": "مردانہ سوٹ",
     "kurta": "کرتا",
     "waistcoat": "واسکٹ",
-    "pants": "پتلون",
-    "shirt": "شرٹ",
-    "womens_dress": "خواتین لباس",
+    "pant_shirt": "پینٹ شرٹ",
+    "mens_suit": "مردانہ سوٹ",
+    "womens_dress": "لیڈیز سوٹ",
   };
 
-  // ── Shalwar Kameez ──
-  static const List<MeasurementFieldDef> _shalwarKameez = [
-    MeasurementFieldDef(key: "kameez_length", labelEn: "Kameez Length", labelUr: "قمیض لمبائی"),
-    MeasurementFieldDef(key: "chest", labelEn: "Chest", labelUr: "سینہ"),
-    MeasurementFieldDef(key: "shoulder", labelEn: "Shoulder", labelUr: "کندھا"),
-    MeasurementFieldDef(key: "sleeves", labelEn: "Sleeves", labelUr: "آستین"),
-    MeasurementFieldDef(key: "collar", labelEn: "Collar", labelUr: "گلا"),
-    MeasurementFieldDef(key: "daman", labelEn: "Daman", labelUr: "دامن"),
-    MeasurementFieldDef(key: "shalwar_length", labelEn: "Shalwar Length", labelUr: "شلوار لمبائی"),
-    MeasurementFieldDef(key: "shalwar_pancha", labelEn: "Pancha", labelUr: "پانچہ"),
-    MeasurementFieldDef(key: "waist", labelEn: "Waist", labelUr: "کمر"),
+  /// Primary chips in mockup order (first 4).
+  static const List<String> primaryCategories = [
+    "shalwar_kameez",
+    "kurta",
+    "waistcoat",
+    "pant_shirt",
   ];
 
-  // ── Men's Suit ──
-  static const List<MeasurementFieldDef> _mensSuit = [
-    MeasurementFieldDef(key: "coat_length", labelEn: "Coat Length", labelUr: "کوٹ لمبائی"),
-    MeasurementFieldDef(key: "chest", labelEn: "Chest", labelUr: "سینہ"),
-    MeasurementFieldDef(key: "shoulder", labelEn: "Shoulder", labelUr: "کندھا"),
-    MeasurementFieldDef(key: "sleeves", labelEn: "Sleeves", labelUr: "آستین"),
-    MeasurementFieldDef(key: "waist", labelEn: "Waist", labelUr: "کمر"),
-    MeasurementFieldDef(key: "trouser_length", labelEn: "Trouser Length", labelUr: "پتلون لمبائی"),
-    MeasurementFieldDef(key: "trouser_bottom", labelEn: "Trouser Bottom", labelUr: "پتلون موہری"),
-    MeasurementFieldDef(key: "inseam", labelEn: "Inseam", labelUr: "اندرونی لمبائی"),
+  // ── Shalwar Kameez (mockup: Lambai · Baazu · Tera · Chaati · Kamar · Gher · Gala · Shalwar)
+  static const List<MeasurementFieldDef> _shalwarKameez = [
+    MeasurementFieldDef(key: "lambai", labelEn: "Lambai", labelUr: "لمبائی"),
+    MeasurementFieldDef(key: "baazu", labelEn: "Baazu", labelUr: "بازو"),
+    MeasurementFieldDef(key: "tera", labelEn: "Tera", labelUr: "کندھا"),
+    MeasurementFieldDef(key: "chaati", labelEn: "Chaati", labelUr: "چھاتی"),
+    MeasurementFieldDef(key: "kamar", labelEn: "Kamar", labelUr: "کمر"),
+    MeasurementFieldDef(key: "gher", labelEn: "Gher", labelUr: "گھیر"),
+    MeasurementFieldDef(key: "gala", labelEn: "Gala", labelUr: "گلا"),
+    MeasurementFieldDef(key: "shalwar", labelEn: "Shalwar", labelUr: "شلوار"),
   ];
 
   // ── Kurta ──
   static const List<MeasurementFieldDef> _kurta = [
-    MeasurementFieldDef(key: "length", labelEn: "Length", labelUr: "لمبائی"),
-    MeasurementFieldDef(key: "chest", labelEn: "Chest", labelUr: "سینہ"),
-    MeasurementFieldDef(key: "shoulder", labelEn: "Shoulder", labelUr: "کندھا"),
-    MeasurementFieldDef(key: "sleeves", labelEn: "Sleeves", labelUr: "آستین"),
-    MeasurementFieldDef(key: "collar", labelEn: "Collar", labelUr: "گلا"),
-    MeasurementFieldDef(key: "daman", labelEn: "Daman", labelUr: "دامن"),
+    MeasurementFieldDef(key: "lambai", labelEn: "Lambai", labelUr: "لمبائی"),
+    MeasurementFieldDef(key: "chaati", labelEn: "Chaati", labelUr: "چھاتی"),
+    MeasurementFieldDef(key: "tera", labelEn: "Tera", labelUr: "کندھا"),
+    MeasurementFieldDef(key: "baazu", labelEn: "Baazu", labelUr: "بازو"),
+    MeasurementFieldDef(key: "gala", labelEn: "Gala", labelUr: "گلا"),
+    MeasurementFieldDef(key: "gher", labelEn: "Gher", labelUr: "گھیر"),
   ];
 
   // ── Waistcoat ──
   static const List<MeasurementFieldDef> _waistcoat = [
-    MeasurementFieldDef(key: "length", labelEn: "Length", labelUr: "لمبائی"),
-    MeasurementFieldDef(key: "chest", labelEn: "Chest", labelUr: "سینہ"),
-    MeasurementFieldDef(key: "shoulder", labelEn: "Shoulder", labelUr: "کندھا"),
+    MeasurementFieldDef(key: "lambai", labelEn: "Lambai", labelUr: "لمبائی"),
+    MeasurementFieldDef(key: "chaati", labelEn: "Chaati", labelUr: "چھاتی"),
+    MeasurementFieldDef(key: "tera", labelEn: "Tera", labelUr: "کندھا"),
+    MeasurementFieldDef(key: "kamar", labelEn: "Kamar", labelUr: "کمر"),
   ];
 
-  // ── Pants ──
-  static const List<MeasurementFieldDef> _pants = [
-    MeasurementFieldDef(key: "length", labelEn: "Length", labelUr: "لمبائی"),
-    MeasurementFieldDef(key: "waist", labelEn: "Waist", labelUr: "کمر"),
+  // ── Pant-shirt ──
+  static const List<MeasurementFieldDef> _pantShirt = [
+    MeasurementFieldDef(key: "shirt_lambai", labelEn: "Shirt", labelUr: "شرٹ"),
+    MeasurementFieldDef(key: "chaati", labelEn: "Chaati", labelUr: "چھاتی"),
+    MeasurementFieldDef(key: "tera", labelEn: "Tera", labelUr: "کندھا"),
+    MeasurementFieldDef(key: "baazu", labelEn: "Baazu", labelUr: "بازو"),
+    MeasurementFieldDef(key: "gala", labelEn: "Gala", labelUr: "گلا"),
+    MeasurementFieldDef(key: "pant_lambai", labelEn: "Pant", labelUr: "پینٹ"),
+    MeasurementFieldDef(key: "kamar", labelEn: "Kamar", labelUr: "کمر"),
     MeasurementFieldDef(key: "hip", labelEn: "Hip", labelUr: "کولہا"),
-    MeasurementFieldDef(key: "thigh", labelEn: "Thigh", labelUr: "ران"),
+  ];
+
+  // ── Men's Suit ──
+  static const List<MeasurementFieldDef> _mensSuit = [
+    MeasurementFieldDef(key: "coat_lambai", labelEn: "Coat", labelUr: "کوٹ"),
+    MeasurementFieldDef(key: "chaati", labelEn: "Chaati", labelUr: "چھاتی"),
+    MeasurementFieldDef(key: "tera", labelEn: "Tera", labelUr: "کندھا"),
+    MeasurementFieldDef(key: "baazu", labelEn: "Baazu", labelUr: "بازو"),
+    MeasurementFieldDef(key: "kamar", labelEn: "Kamar", labelUr: "کمر"),
+    MeasurementFieldDef(key: "pant_lambai", labelEn: "Pant", labelUr: "پینٹ"),
     MeasurementFieldDef(key: "bottom", labelEn: "Bottom", labelUr: "موہری"),
-    MeasurementFieldDef(key: "inseam", labelEn: "Inseam", labelUr: "اندرونی لمبائی"),
+    MeasurementFieldDef(key: "inseam", labelEn: "Inseam", labelUr: "اندرونی"),
   ];
 
-  // ── Shirt ──
-  static const List<MeasurementFieldDef> _shirt = [
-    MeasurementFieldDef(key: "length", labelEn: "Length", labelUr: "لمبائی"),
-    MeasurementFieldDef(key: "chest", labelEn: "Chest", labelUr: "سینہ"),
-    MeasurementFieldDef(key: "shoulder", labelEn: "Shoulder", labelUr: "کندھا"),
-    MeasurementFieldDef(key: "sleeves", labelEn: "Sleeves", labelUr: "آستین"),
-    MeasurementFieldDef(key: "collar", labelEn: "Collar", labelUr: "گلا"),
-    MeasurementFieldDef(key: "cuff", labelEn: "Cuff", labelUr: "کف"),
-  ];
-
-  // ── Women's Dress ──
+  // ── Ladies suit ──
   static const List<MeasurementFieldDef> _womensDress = [
-    MeasurementFieldDef(key: "length", labelEn: "Length", labelUr: "لمبائی"),
-    MeasurementFieldDef(key: "chest", labelEn: "Chest", labelUr: "سینہ"),
-    MeasurementFieldDef(key: "waist", labelEn: "Waist", labelUr: "کمر"),
+    MeasurementFieldDef(key: "lambai", labelEn: "Lambai", labelUr: "لمبائی"),
+    MeasurementFieldDef(key: "chaati", labelEn: "Chaati", labelUr: "چھاتی"),
+    MeasurementFieldDef(key: "kamar", labelEn: "Kamar", labelUr: "کمر"),
     MeasurementFieldDef(key: "hip", labelEn: "Hip", labelUr: "کولہا"),
-    MeasurementFieldDef(key: "shoulder", labelEn: "Shoulder", labelUr: "کندھا"),
-    MeasurementFieldDef(key: "sleeves", labelEn: "Sleeves", labelUr: "آستین"),
-    MeasurementFieldDef(key: "armhole", labelEn: "Armhole", labelUr: "بغل"),
-    MeasurementFieldDef(key: "daman", labelEn: "Daman", labelUr: "دامن"),
+    MeasurementFieldDef(key: "tera", labelEn: "Tera", labelUr: "کندھا"),
+    MeasurementFieldDef(key: "baazu", labelEn: "Baazu", labelUr: "بازو"),
+    MeasurementFieldDef(key: "gher", labelEn: "Gher", labelUr: "گھیر"),
   ];
 }
 

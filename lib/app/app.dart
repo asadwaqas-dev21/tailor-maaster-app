@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_localizations/flutter_localizations.dart";
 import "package:tailor_app/l10n/gen/app_localizations.dart";
@@ -70,12 +71,28 @@ class TailorProApp extends StatelessWidget {
           }
 
           return MaterialApp(
-            title: "TailorPro",
+            title: "Darzi",
             debugShowCheckedModeBanner: false,
             theme: lightTheme,
             darkTheme: darkTheme,
             themeMode: settingsState.themeMode,
             locale: settingsState.locale,
+            builder: (context, child) {
+              final dark = settingsState.themeMode == ThemeMode.dark ||
+                  (settingsState.themeMode == ThemeMode.system &&
+                      MediaQuery.platformBrightnessOf(context) ==
+                          Brightness.dark);
+              SystemChrome.setSystemUIOverlayStyle(
+                SystemUiOverlayStyle(
+                  statusBarColor: Colors.transparent,
+                  statusBarIconBrightness:
+                      dark ? Brightness.light : Brightness.dark,
+                  statusBarBrightness:
+                      dark ? Brightness.dark : Brightness.light,
+                ),
+              );
+              return child ?? const SizedBox.shrink();
+            },
             supportedLocales: const [
               Locale("en"),
               Locale("ur"),

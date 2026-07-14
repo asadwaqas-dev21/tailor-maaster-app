@@ -30,33 +30,66 @@ class _ReportScreenContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = context.theme;
+    final darzi = context.darzi;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.salesReport)),
-      body: BlocBuilder<ReportBloc, ReportState>(
-        builder: (context, state) {
-          if (state is ReportLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is ReportError) {
-            return Center(child: Text(state.message));
-          }
-          if (state is ReportLoaded) {
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildPeriodSelector(context, state.period),
-                const SizedBox(height: 24),
-                _buildSummaryCards(context, state),
-                const SizedBox(height: 24),
-                Text("Sales Trend", style: theme.textTheme.titleMedium),
-                const SizedBox(height: 16),
-                _buildChart(context, state),
-              ],
-            );
-          }
-          return const SizedBox.shrink();
-        },
+      backgroundColor: darzi.scaffold,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Khata",
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: darzi.ink,
+                        ),
+                  ),
+                  Text(
+                    l10n.salesReport,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: darzi.muted,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<ReportBloc, ReportState>(
+                builder: (context, state) {
+                  if (state is ReportLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: AppColors.pine),
+                    );
+                  }
+                  if (state is ReportError) {
+                    return Center(child: Text(state.message));
+                  }
+                  if (state is ReportLoaded) {
+                    return ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                      children: [
+                        _buildPeriodSelector(context, state.period),
+                        const SizedBox(height: 24),
+                        _buildSummaryCards(context, state),
+                        const SizedBox(height: 24),
+                        Text("Sales Trend", style: theme.textTheme.titleMedium),
+                        const SizedBox(height: 16),
+                        _buildChart(context, state),
+                      ],
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

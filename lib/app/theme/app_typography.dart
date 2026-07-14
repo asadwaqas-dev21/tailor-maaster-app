@@ -1,13 +1,17 @@
 import "package:flutter/material.dart";
-import "package:google_fonts/google_fonts.dart";
 
-/// Darzi typography:
+/// Darzi typography (bundled assets — no runtime Google Fonts fetch):
 /// - Bricolage Grotesque — display / titles
 /// - Inter — UI body
 /// - Space Mono — naap numbers & PKR
 /// - Noto Nastaliq Urdu — Urdu labels
 class AppTypography {
   AppTypography._();
+
+  static const String displayFamily = "BricolageGrotesque";
+  static const String uiFamily = "Inter";
+  static const String monoFamily = "SpaceMono";
+  static const String urduFamily = "NotoNastaliqUrdu";
 
   static TextStyle display({
     double size = 24,
@@ -16,7 +20,8 @@ class AppTypography {
     double? letterSpacing,
     double? height,
   }) =>
-      GoogleFonts.bricolageGrotesque(
+      TextStyle(
+        fontFamily: displayFamily,
         fontSize: size,
         fontWeight: weight,
         color: color,
@@ -31,7 +36,8 @@ class AppTypography {
     double? letterSpacing,
     double? height,
   }) =>
-      GoogleFonts.inter(
+      TextStyle(
+        fontFamily: uiFamily,
         fontSize: size,
         fontWeight: weight,
         color: color,
@@ -46,7 +52,8 @@ class AppTypography {
     double? letterSpacing,
     double? height,
   }) =>
-      GoogleFonts.spaceMono(
+      TextStyle(
+        fontFamily: monoFamily,
         fontSize: size,
         fontWeight: weight,
         color: color,
@@ -60,7 +67,8 @@ class AppTypography {
     Color? color,
     double? height,
   }) =>
-      GoogleFonts.notoNastaliqUrdu(
+      TextStyle(
+        fontFamily: urduFamily,
         fontSize: size,
         fontWeight: weight,
         color: color,

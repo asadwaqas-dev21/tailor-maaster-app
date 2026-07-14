@@ -33,6 +33,9 @@ class CustomerModel extends HiveObject {
   @HiveField(8)
   final String? imagePath;
 
+  @HiveField(9)
+  final bool? isRegular;
+
   CustomerModel({
     required this.id,
     required this.name,
@@ -43,9 +46,9 @@ class CustomerModel extends HiveObject {
     required this.createdAt,
     this.email,
     this.imagePath,
+    this.isRegular,
   });
 
-  /// Convert to domain entity
   Customer toEntity() {
     return Customer(
       id: id,
@@ -57,10 +60,10 @@ class CustomerModel extends HiveObject {
       notes: notes,
       createdAt: createdAt,
       imagePath: imagePath,
+      isRegular: isRegular ?? false,
     );
   }
 
-  /// Create from domain entity
   factory CustomerModel.fromEntity(Customer entity) {
     return CustomerModel(
       id: entity.id,
@@ -72,6 +75,7 @@ class CustomerModel extends HiveObject {
       notes: entity.notes,
       createdAt: entity.createdAt,
       imagePath: entity.imagePath,
+      isRegular: entity.isRegular,
     );
   }
 }

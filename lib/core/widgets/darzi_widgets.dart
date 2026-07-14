@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:tailor_app/app/theme/app_colors.dart";
 import "package:tailor_app/app/theme/app_typography.dart";
+import "package:tailor_app/app/theme/darzi_theme_colors.dart";
 import "package:tailor_app/core/enums/order_status.dart";
 import "package:tailor_app/core/extensions/date_extensions.dart";
 import "package:tailor_app/domain/entities/order.dart";
@@ -16,10 +17,11 @@ class StitchDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = DarziThemeColors.of(context);
     return Padding(
       padding: margin,
       child: CustomPaint(
-        painter: _DashPainter(color: AppColors.line),
+        painter: _DashPainter(color: c.line),
         size: const Size(double.infinity, 2),
       ),
     );
@@ -271,35 +273,46 @@ class StatusPill extends StatelessWidget {
 }
 
 /// Pipeline track: Mila → Cutting → Silai → Ready → Diya
+/// [compact] hides Diya (4 dots) for home order cards.
 class OrderTrack extends StatelessWidget {
   final OrderStatus status;
   final bool showLabels;
+  final bool compact;
 
   const OrderTrack({
     super.key,
     required this.status,
     this.showLabels = false,
+    this.compact = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final values = OrderStatus.values;
+    final values = compact
+        ? OrderStatus.values
+            .where((s) => s != OrderStatus.delivered)
+            .toList()
+        : OrderStatus.values;
+    final displayStatus = compact && status == OrderStatus.delivered
+        ? OrderStatus.ready
+        : status;
+
     return Column(
       children: [
         Row(
           children: [
             for (var i = 0; i < values.length; i++) ...[
               _Dot(
-                done: values[i].index < status.index,
-                on: values[i] == status,
+                done: values[i].index < displayStatus.index,
+                on: values[i] == displayStatus,
               ),
               if (i < values.length - 1)
                 Expanded(
                   child: Container(
                     height: 2,
-                    color: values[i].index < status.index
+                    color: values[i].index < displayStatus.index
                         ? AppColors.pine
-                        : AppColors.line,
+                        : DarziThemeColors.of(context).line,
                   ),
                 ),
             ],
@@ -310,12 +323,14 @@ class OrderTrack extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: values.map((s) {
-              final isCurrent = s == status;
+              final isCurrent = s == displayStatus;
               return Text(
                 s.shortLabel,
                 style: AppTypography.mono(
                   size: 9,
-                  color: isCurrent ? AppColors.brass : AppColors.muted,
+                  color: isCurrent
+                      ? DarziThemeColors.of(context).brass
+                      : DarziThemeColors.of(context).muted,
                 ),
               );
             }).toList(),
@@ -338,11 +353,11 @@ class _Dot extends StatelessWidget {
       height: 11,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: on
+                color: on
             ? AppColors.brass
             : done
                 ? AppColors.pine
-                : AppColors.line,
+                : DarziThemeColors.of(context).line,
       ),
     );
   }
@@ -352,40 +367,46 @@ class _Dot extends StatelessWidget {
 class DarziOrderCard extends StatelessWidget {
   final Order order;
   final VoidCallback? onTap;
-  final bool isRush;
 
   const DarziOrderCard({
     super.key,
     required this.order,
     this.onTap,
-    this.isRush = false,
   });
 
   bool get _rush {
-    if (isRush) return true;
+    if (order.isRush) return true;
     final notes = (order.designNotes ?? "").toLowerCase();
     return notes.contains("rush") ||
         notes.contains("shaadi") ||
         notes.contains("eid") ||
-        order.deliveryDate.difference(DateTime.now()).inDays <= 1 &&
+        (order.deliveryDate.difference(DateTime.now()).inDays <= 1 &&
             order.status != OrderStatus.ready &&
-            order.status != OrderStatus.delivered;
+            order.status != OrderStatus.delivered);
   }
 
   @override
   Widget build(BuildContext context) {
+    final c = DarziThemeColors.of(context);
+    final dueText = order.status == OrderStatus.ready ||
+            order.status == OrderStatus.delivered
+        ? "Ho gaya"
+        : _rush
+            ? order.deliveryDate.rushRelative
+            : order.deliveryDate.relative;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 11),
         padding: const EdgeInsets.all(13),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: c.surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: _rush
                 ? AppColors.crimson.withValues(alpha: 0.35)
-                : AppColors.line,
+                : c.line,
           ),
         ),
         clipBehavior: Clip.hardEdge,
@@ -429,16 +450,15 @@ class DarziOrderCard extends StatelessWidget {
                             style: AppTypography.ui(
                               size: 14,
                               weight: FontWeight.w600,
-                              color: AppColors.ink,
+                              color: c.ink,
                               letterSpacing: -0.1,
                             ),
                           ),
                           Text(
-                            "${order.garmentType.replaceAll('_', ' ')}"
-                            "${order.quantity > 1 ? ' · ${order.quantity} pcs' : ''}",
+                            order.garmentTitle,
                             style: AppTypography.ui(
                               size: 11.5,
-                              color: AppColors.muted,
+                              color: c.muted,
                             ),
                           ),
                         ],
@@ -458,18 +478,15 @@ class DarziOrderCard extends StatelessWidget {
                               ? Icons.check
                               : Icons.schedule,
                           size: 13,
-                          color: AppColors.muted,
+                          color: c.muted,
                         ),
                         const SizedBox(width: 5),
                         Text(
-                          order.status == OrderStatus.ready ||
-                                  order.status == OrderStatus.delivered
-                              ? "Ho gaya"
-                              : order.deliveryDate.relative,
+                          dueText,
                           style: AppTypography.mono(
                             size: 11,
-                            weight: FontWeight.w400,
-                            color: _rush ? AppColors.crimson : AppColors.muted,
+                            weight: _rush ? FontWeight.w700 : FontWeight.w400,
+                            color: _rush ? AppColors.crimson : c.muted,
                           ),
                         ),
                       ],
@@ -479,7 +496,7 @@ class DarziOrderCard extends StatelessWidget {
                 if (order.status != OrderStatus.ready &&
                     order.status != OrderStatus.delivered) ...[
                   const SizedBox(height: 12),
-                  OrderTrack(status: order.status),
+                  OrderTrack(status: order.status, compact: true),
                 ],
               ],
             ),
@@ -499,6 +516,7 @@ class DarziIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = DarziThemeColors.of(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -506,10 +524,10 @@ class DarziIconButton extends StatelessWidget {
         width: 38,
         height: 38,
         decoration: BoxDecoration(
-          color: AppColors.paperPanel,
+          color: c.iconBtn,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, size: 19, color: AppColors.ink),
+        child: Icon(icon, size: 19, color: c.ink),
       ),
     );
   }

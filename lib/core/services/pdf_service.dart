@@ -249,7 +249,7 @@ class PdfService {
         ),
         pw.SizedBox(height: 4),
         pw.Text(
-          "Powered by TailorPro",
+          "Powered by Darzi",
           style: pw.TextStyle(font: ttf, fontSize: 10, color: PdfColors.grey),
         ),
       ],

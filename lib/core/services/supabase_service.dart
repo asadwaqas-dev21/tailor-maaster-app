@@ -38,7 +38,7 @@ class SupabaseService {
       return;
     }
 
-    await Supabase.initialize(url: url, anonKey: anonKey);
+    await Supabase.initialize(url: url, publishableKey: anonKey);
     _initialized = true;
   }
 }

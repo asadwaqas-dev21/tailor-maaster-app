@@ -105,9 +105,6 @@ class OrderRepositoryImpl implements OrderRepository {
   Future<void> updateOrderStatus(String id, OrderStatus status) async {
     final order = getOrderById(id);
     if (order != null) {
-      if (status == OrderStatus.delivered && order.remainingAmount > 0) {
-        throw Exception("Cannot deliver unpaid order");
-      }
       final updated = order.copyWith(status: status);
       await updateOrder(updated);
     }

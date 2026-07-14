@@ -25,7 +25,7 @@ extension OrderStatusExtension on OrderStatus {
   String get labelEn {
     switch (this) {
       case OrderStatus.pending:
-        return "Pending";
+        return "Mila";
       case OrderStatus.cutting:
         return "Cutting";
       case OrderStatus.stitching:

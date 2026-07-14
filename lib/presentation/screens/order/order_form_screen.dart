@@ -14,6 +14,7 @@ import "package:tailor_app/core/widgets/app_dropdown.dart";
 import "package:tailor_app/core/widgets/app_text_field.dart";
 import "package:tailor_app/data/repositories/customer_repository_impl.dart";
 import "package:tailor_app/data/repositories/measurement_repository_impl.dart";
+import "package:tailor_app/data/repositories/order_repository_impl.dart";
 import "package:tailor_app/data/repositories/staff_repository_impl.dart";
 import "package:tailor_app/domain/entities/customer.dart";
 import "package:tailor_app/domain/entities/measurement.dart";
@@ -168,6 +169,26 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       paymentStatus = PaymentStatus.unpaid;
     }
 
+    final notes = _notesCtrl.text.trim();
+    final isRush = notes.toLowerCase().contains("rush") ||
+        notes.toLowerCase().contains("shaadi") ||
+        notes.toLowerCase().contains("eid") ||
+        (widget.order?.isRush ?? false);
+
+    String tokenCode = widget.order?.tokenCode ?? "";
+    if (tokenCode.isEmpty) {
+      final existing = OrderRepositoryImpl().getAllOrders();
+      var maxN = 1000;
+      for (final o in existing) {
+        final m = RegExp(r"(\d+)").firstMatch(o.tokenCode);
+        if (m != null) {
+          final n = int.tryParse(m.group(1)!) ?? 0;
+          if (n > maxN) maxN = n;
+        }
+      }
+      tokenCode = "DZ-${maxN + 1}";
+    }
+
     final order = Order(
       id: widget.order?.id ?? const Uuid().v4(),
       customerId: _selectedCustomerId!,
@@ -177,9 +198,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       fabricDetails: _fabricCtrl.text.trim().isEmpty
           ? null
           : _fabricCtrl.text.trim(),
-      designNotes: _notesCtrl.text.trim().isEmpty
-          ? null
-          : _notesCtrl.text.trim(),
+      designNotes: notes.isEmpty ? null : notes,
       quantity: int.tryParse(_quantityCtrl.text) ?? 1,
       totalAmount: total,
       advanceAmount: advance,
@@ -193,6 +212,8 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       assignedStaffName: _selectedStaffName,
       stitchingCost: stitchingCost,
       isStitcherPaid: widget.order?.isStitcherPaid ?? false,
+      tokenCode: tokenCode,
+      isRush: isRush,
     );
 
     if (_isEditing) {

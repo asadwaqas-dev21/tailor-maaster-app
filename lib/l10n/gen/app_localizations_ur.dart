@@ -9,7 +9,7 @@ class AppLocalizationsUr extends AppLocalizations {
   AppLocalizationsUr([String locale = 'ur']) : super(locale);
 
   @override
-  String get appName => 'ٹیلر پرو';
+  String get appName => 'درزی';
 
   @override
   String get dashboard => 'ڈیش بورڈ';

@@ -67,6 +67,12 @@ class OrderModel extends HiveObject {
   @HiveField(19)
   final bool? isStitcherPaid;
 
+  @HiveField(20)
+  final String? tokenCode;
+
+  @HiveField(21)
+  final bool? isRush;
+
   OrderModel({
     required this.id,
     required this.customerId,
@@ -88,9 +94,10 @@ class OrderModel extends HiveObject {
     this.assignedStaffName,
     this.stitchingCost,
     this.isStitcherPaid,
+    this.tokenCode,
+    this.isRush,
   });
 
-  /// Convert to domain entity
   Order toEntity() {
     return Order(
       id: id,
@@ -113,10 +120,11 @@ class OrderModel extends HiveObject {
       assignedStaffName: assignedStaffName,
       stitchingCost: stitchingCost ?? (totalAmount * 0.40),
       isStitcherPaid: isStitcherPaid ?? false,
+      tokenCode: tokenCode ?? "",
+      isRush: isRush ?? false,
     );
   }
 
-  /// Create from domain entity
   factory OrderModel.fromEntity(Order entity) {
     return OrderModel(
       id: entity.id,
@@ -139,6 +147,8 @@ class OrderModel extends HiveObject {
       assignedStaffName: entity.assignedStaffName,
       stitchingCost: entity.stitchingCost,
       isStitcherPaid: entity.isStitcherPaid,
+      tokenCode: entity.tokenCode.isEmpty ? null : entity.tokenCode,
+      isRush: entity.isRush,
     );
   }
 }

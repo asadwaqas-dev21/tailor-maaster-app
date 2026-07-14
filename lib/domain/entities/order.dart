@@ -23,6 +23,10 @@ class Order extends Equatable {
   final String? assignedStaffName;
   final double stitchingCost;
   final bool isStitcherPaid;
+  /// Slip token e.g. DZ-1042 (Supabase: orders.token_code)
+  final String tokenCode;
+  /// Rush / Eid / shaadi flag (Supabase: orders.is_rush)
+  final bool isRush;
 
   const Order({
     required this.id,
@@ -45,10 +49,25 @@ class Order extends Equatable {
     this.assignedStaffName,
     this.stitchingCost = 0.0,
     this.isStitcherPaid = false,
+    this.tokenCode = "",
+    this.isRush = false,
   });
 
-  /// Remaining balance
   double get remainingAmount => totalAmount - advanceAmount;
+
+  String get displayToken =>
+      tokenCode.isNotEmpty ? tokenCode : "DZ-${1000 + (id.hashCode.abs() % 9000)}";
+
+  String get garmentTitle {
+    final g = garmentType.replaceAll("_", " ");
+    final note = designNotes?.trim();
+    if (note != null && note.isNotEmpty) {
+      final short = note.length > 24 ? "${note.substring(0, 24)}…" : note;
+      return "$g · $short";
+    }
+    if (quantity > 1) return "$g · $quantity pcs";
+    return g;
+  }
 
   Order copyWith({
     String? id,
@@ -71,6 +90,8 @@ class Order extends Equatable {
     String? assignedStaffName,
     double? stitchingCost,
     bool? isStitcherPaid,
+    String? tokenCode,
+    bool? isRush,
   }) {
     return Order(
       id: id ?? this.id,
@@ -93,6 +114,8 @@ class Order extends Equatable {
       assignedStaffName: assignedStaffName ?? this.assignedStaffName,
       stitchingCost: stitchingCost ?? this.stitchingCost,
       isStitcherPaid: isStitcherPaid ?? this.isStitcherPaid,
+      tokenCode: tokenCode ?? this.tokenCode,
+      isRush: isRush ?? this.isRush,
     );
   }
 
@@ -118,5 +141,7 @@ class Order extends Equatable {
         assignedStaffName,
         stitchingCost,
         isStitcherPaid,
+        tokenCode,
+        isRush,
       ];
 }

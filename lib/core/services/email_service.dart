@@ -61,7 +61,7 @@ class EmailService {
         );
 
         final message = Message()
-          ..from = Address(sender, "TailorPro")
+          ..from = Address(sender, "Darzi")
           ..recipients.add(email)
           ..subject = subject
           ..text = body;
@@ -84,7 +84,7 @@ class EmailService {
     final buffer = StringBuffer();
     buffer.writeln("Dear ${order.customerName},");
     buffer.writeln("");
-    buffer.writeln("Thank you for your order with TailorPro! Here are your order details:");
+    buffer.writeln("Thank you for your order with Darzi! Here are your order details:");
     buffer.writeln("");
     buffer.writeln("Order Summary:");
     buffer.writeln("- Order ID: #${order.id.substring(0, 8).toUpperCase()}");
@@ -106,7 +106,7 @@ class EmailService {
     buffer.writeln("Thank you for choosing us! 🙏");
     buffer.writeln("");
     buffer.writeln("Best regards,");
-    buffer.writeln("TailorPro Team");
+    buffer.writeln("Darzi Team");
     return buffer.toString();
   }
 
@@ -131,10 +131,10 @@ class EmailService {
     }
     buffer.writeln("Please visit our shop at your convenience to collect your order.");
     buffer.writeln("");
-    buffer.writeln("Thank you for choosing TailorPro! 🙏");
+    buffer.writeln("Thank you for choosing Darzi! 🙏");
     buffer.writeln("");
     buffer.writeln("Best regards,");
-    buffer.writeln("TailorPro Team");
+    buffer.writeln("Darzi Team");
     return buffer.toString();
   }
 

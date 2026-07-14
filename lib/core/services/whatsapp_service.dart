@@ -29,7 +29,7 @@ class WhatsAppService {
   /// Build order confirmation message
   static String _buildOrderConfirmation(Order order) {
     final buffer = StringBuffer();
-    buffer.writeln("✂️ *TailorPro - Order Confirmation*");
+    buffer.writeln("✂️ *Darzi - Order Confirmation*");
     buffer.writeln("━━━━━━━━━━━━━━━━━━━");
     buffer.writeln("👤 *Customer:* ${order.customerName}");
     buffer.writeln("👔 *Garment:* ${order.garmentType.snakeToTitle}");
@@ -45,27 +45,27 @@ class WhatsAppService {
       buffer.writeln("🧵 *Fabric:* ${order.fabricDetails}");
     }
     buffer.writeln("");
-    buffer.writeln("Thank you for choosing TailorPro! 🙏");
+    buffer.writeln("Shukriya — Darzi 🙏");
     return buffer.toString();
   }
 
   /// Build ready for pickup message
   static String _buildReadyForPickup(Order order) {
     final buffer = StringBuffer();
-    buffer.writeln("✅ *TailorPro - Ready for Pickup*");
+    buffer.writeln("✅ *Darzi — Ready hai*");
     buffer.writeln("━━━━━━━━━━━━━━━━━━━");
-    buffer.writeln("Dear ${order.customerName},");
+    buffer.writeln("Assalam-o-alaikum ${order.customerName},");
     buffer.writeln("");
-    buffer.writeln("Your ${order.garmentType.snakeToTitle} is ready! 🎉");
+    buffer.writeln("Aapka ${order.garmentType.snakeToTitle} ready hai! 🎉");
     buffer.writeln("");
     if (order.remainingAmount > 0) {
-      buffer.writeln("📊 *Remaining Balance:* ${AppConstants.currencySymbol} ${order.remainingAmount.toStringAsFixed(0)}");
+      buffer.writeln("📊 *Baqaya:* ${AppConstants.currencySymbol} ${order.remainingAmount.toStringAsFixed(0)}");
       buffer.writeln("");
     }
-    buffer.writeln("Please visit our shop at your convenience to collect your order.");
+    buffer.writeln("Meherbani karke dukaan se le jayein.");
     buffer.writeln("");
-    buffer.writeln("Thank you! 🙏");
-    buffer.writeln("*TailorPro*");
+    buffer.writeln("Shukriya! 🙏");
+    buffer.writeln("*Darzi*");
     return buffer.toString();
   }
 
