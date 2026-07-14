@@ -42,7 +42,11 @@ class _DashPainter extends CustomPainter {
     const gap = 5.0;
     double x = 0;
     while (x < size.width) {
-      canvas.drawLine(Offset(x, 1), Offset((x + dash).clamp(0, size.width), 1), paint);
+      canvas.drawLine(
+        Offset(x, 1),
+        Offset((x + dash).clamp(0, size.width), 1),
+        paint,
+      );
       x += dash + gap;
     }
   }
@@ -56,11 +60,7 @@ class MeasuringTapeBar extends StatelessWidget {
   final String label;
   final double height;
 
-  const MeasuringTapeBar({
-    super.key,
-    this.label = "INCHES",
-    this.height = 26,
-  });
+  const MeasuringTapeBar({super.key, this.label = "INCHES", this.height = 26});
 
   @override
   Widget build(BuildContext context) {
@@ -76,9 +76,7 @@ class MeasuringTapeBar extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Positioned.fill(
-            child: CustomPaint(painter: _TapeTicksPainter()),
-          ),
+          Positioned.fill(child: CustomPaint(painter: _TapeTicksPainter())),
           PositionedDirectional(
             start: 10,
             top: 0,
@@ -289,9 +287,7 @@ class OrderTrack extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final values = compact
-        ? OrderStatus.values
-            .where((s) => s != OrderStatus.delivered)
-            .toList()
+        ? OrderStatus.values.where((s) => s != OrderStatus.delivered).toList()
         : OrderStatus.values;
     final displayStatus = compact && status == OrderStatus.delivered
         ? OrderStatus.ready
@@ -353,11 +349,11 @@ class _Dot extends StatelessWidget {
       height: 11,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-                color: on
+        color: on
             ? AppColors.brass
             : done
-                ? AppColors.pine
-                : DarziThemeColors.of(context).line,
+            ? AppColors.pine
+            : DarziThemeColors.of(context).line,
       ),
     );
   }
@@ -368,11 +364,7 @@ class DarziOrderCard extends StatelessWidget {
   final Order order;
   final VoidCallback? onTap;
 
-  const DarziOrderCard({
-    super.key,
-    required this.order,
-    this.onTap,
-  });
+  const DarziOrderCard({super.key, required this.order, this.onTap});
 
   bool get _rush {
     if (order.isRush) return true;
@@ -388,12 +380,13 @@ class DarziOrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = DarziThemeColors.of(context);
-    final dueText = order.status == OrderStatus.ready ||
+    final dueText =
+        order.status == OrderStatus.ready ||
             order.status == OrderStatus.delivered
         ? "Ho gaya"
         : _rush
-            ? order.deliveryDate.rushRelative
-            : order.deliveryDate.relative;
+        ? order.deliveryDate.rushRelative
+        : order.deliveryDate.relative;
 
     return GestureDetector(
       onTap: onTap,
@@ -404,9 +397,7 @@ class DarziOrderCard extends StatelessWidget {
           color: c.surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: _rush
-                ? AppColors.crimson.withValues(alpha: 0.35)
-                : c.line,
+            color: _rush ? AppColors.crimson.withValues(alpha: 0.35) : c.line,
           ),
         ),
         clipBehavior: Clip.hardEdge,
@@ -458,10 +449,7 @@ class DarziOrderCard extends StatelessWidget {
                           ),
                           Text(
                             order.garmentTitle,
-                            style: AppTypography.ui(
-                              size: 11.5,
-                              color: c.muted,
-                            ),
+                            style: AppTypography.ui(size: 11.5, color: c.muted),
                           ),
                         ],
                       ),
@@ -529,12 +517,7 @@ class DarziIconButton extends StatelessWidget {
           color: c.iconBtn,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          icon,
-          size: 19,
-          color: c.ink,
-          matchTextDirection: true,
-        ),
+        child: Icon(icon, size: 19, color: c.ink),
       ),
     );
   }
