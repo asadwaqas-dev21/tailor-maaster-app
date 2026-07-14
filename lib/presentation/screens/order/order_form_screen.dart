@@ -2,6 +2,9 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:iconsax_flutter/iconsax_flutter.dart";
+import "package:tailor_app/app/theme/app_colors.dart";
+import "package:tailor_app/app/theme/app_typography.dart";
+import "package:tailor_app/core/constants/app_constants.dart";
 import "package:tailor_app/core/constants/measurement_fields.dart";
 import "package:tailor_app/core/enums/gender.dart";
 import "package:tailor_app/core/enums/order_status.dart";
@@ -9,9 +12,11 @@ import "package:tailor_app/core/enums/payment_status.dart";
 import "package:tailor_app/core/enums/staff_role.dart";
 import "package:tailor_app/core/extensions/context_extensions.dart";
 import "package:tailor_app/core/services/notification_service.dart";
-import "package:tailor_app/core/widgets/app_button.dart";
+import "package:tailor_app/core/services/whatsapp_service.dart";
 import "package:tailor_app/core/widgets/app_dropdown.dart";
 import "package:tailor_app/core/widgets/app_text_field.dart";
+import "package:tailor_app/core/widgets/darzi_widgets.dart";
+import "package:tailor_app/core/widgets/photo_picker_widget.dart";
 import "package:tailor_app/data/repositories/customer_repository_impl.dart";
 import "package:tailor_app/data/repositories/measurement_repository_impl.dart";
 import "package:tailor_app/data/repositories/order_repository_impl.dart";
@@ -38,12 +43,10 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   final _formKey = GlobalKey<FormState>();
   bool get _isEditing => widget.order != null;
 
-  // Data
   List<Customer> _customers = [];
   List<Measurement> _measurements = [];
   List<Staff> _staffList = [];
 
-  // Form values
   String? _selectedCustomerId;
   String? _selectedCustomerName;
   String? _selectedMeasurementId;
@@ -59,10 +62,21 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   DateTime _orderDate = DateTime.now();
   DateTime _deliveryDate = DateTime.now().add(const Duration(days: 7));
 
+  List<String> _photoPaths = [];
+  bool _isRush = false;
+  double _baqayaPreview = 0;
+
   void _onTotalChanged() {
     if (_isEditing) return;
     final total = double.tryParse(_totalCtrl.text) ?? 0;
     _stitchingCostCtrl.text = (total * 0.40).toStringAsFixed(0);
+    _updateBaqayaPreview();
+  }
+
+  void _updateBaqayaPreview() {
+    final total = double.tryParse(_totalCtrl.text) ?? 0;
+    final advance = double.tryParse(_advanceCtrl.text) ?? 0;
+    setState(() => _baqayaPreview = (total - advance).clamp(0, double.infinity));
   }
 
   @override
@@ -71,6 +85,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     _customers = CustomerRepositoryImpl().getAllCustomers();
     _staffList = StaffRepositoryImpl().getAllStaff();
     _totalCtrl.addListener(_onTotalChanged);
+    _advanceCtrl.addListener(_updateBaqayaPreview);
 
     if (_isEditing) {
       final o = widget.order!;
@@ -88,6 +103,9 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       _stitchingCostCtrl.text = o.stitchingCost.toStringAsFixed(0);
       _orderDate = o.orderDate;
       _deliveryDate = o.deliveryDate;
+      _photoPaths = List.from(o.photoPaths);
+      _isRush = o.isRush;
+      _baqayaPreview = o.remainingAmount;
       _loadMeasurements(o.customerId);
     } else if (widget.customerId != null) {
       _selectedCustomerId = widget.customerId;
@@ -119,6 +137,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
   @override
   void dispose() {
     _totalCtrl.removeListener(_onTotalChanged);
+    _advanceCtrl.removeListener(_updateBaqayaPreview);
     _fabricCtrl.dispose();
     _notesCtrl.dispose();
     _quantityCtrl.dispose();
@@ -170,10 +189,11 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
     }
 
     final notes = _notesCtrl.text.trim();
-    final isRush = notes.toLowerCase().contains("rush") ||
-        notes.toLowerCase().contains("shaadi") ||
-        notes.toLowerCase().contains("eid") ||
-        (widget.order?.isRush ?? false);
+    final notesLower = notes.toLowerCase();
+    final isRush = _isRush ||
+        notesLower.contains("rush") ||
+        notesLower.contains("shaadi") ||
+        notesLower.contains("eid");
 
     String tokenCode = widget.order?.tokenCode ?? "";
     if (tokenCode.isEmpty) {
@@ -206,7 +226,7 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       paymentStatus: paymentStatus,
       orderDate: _orderDate,
       deliveryDate: _deliveryDate,
-      photoPaths: widget.order?.photoPaths ?? [],
+      photoPaths: _photoPaths,
       createdAt: widget.order?.createdAt ?? DateTime.now(),
       assignedStaffId: _selectedStaffId,
       assignedStaffName: _selectedStaffName,
@@ -216,97 +236,241 @@ class _OrderFormScreenState extends State<OrderFormScreen> {
       isRush: isRush,
     );
 
+    final messenger = ScaffoldMessenger.of(context);
+    final nav = Navigator.of(context);
+
     if (_isEditing) {
       context.read<OrderBloc>().add(UpdateOrder(order));
-      context.showSnackBar(context.l10n.orderUpdated);
+      messenger.showSnackBar(SnackBar(content: Text(context.l10n.orderUpdated)));
+      nav.pop();
     } else {
       context.read<OrderBloc>().add(AddOrder(order));
-      context.showSnackBar(context.l10n.orderAdded);
 
-      // Schedule notification
       NotificationService.scheduleDeliveryReminder(
         notificationId: order.id.hashCode,
         customerName: order.customerName,
         garmentType: order.garmentType.replaceAll("_", " "),
         deliveryDate: order.deliveryDate,
       );
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.orderAdded),
+          action: SnackBarAction(
+            label: "WhatsApp bhejein",
+            onPressed: () async {
+              final phone = CustomerRepositoryImpl()
+                  .getCustomerById(order.customerId)
+                  ?.phone;
+              if (phone != null) {
+                await WhatsAppService.sendOrderConfirmation(
+                  phone: phone,
+                  order: order,
+                );
+              }
+            },
+          ),
+          duration: const Duration(seconds: 5),
+        ),
+      );
+      nav.pop();
     }
-    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final darzi = context.darzi;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? l10n.editOrder : l10n.newOrder)),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _buildCustomerPicker(context),
-            const SizedBox(height: 16),
-            if (_selectedCustomerId != null && _measurements.isEmpty) ...[
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.of(context)
-                      .pushNamed(
-                        "/measurement/form",
-                        arguments: {"customerId": _selectedCustomerId!},
-                      )
-                      .then((_) {
-                        _loadMeasurements(_selectedCustomerId!);
-                      });
-                },
-                icon: const Icon(Icons.add_rounded),
-                label: Text(l10n.addMeasurement),
+      backgroundColor: darzi.scaffold,
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+                child: Row(
+                  children: [
+                    DarziIconButton(
+                      icon: Icons.arrow_back_rounded,
+                      onTap: () => Navigator.of(context).pop(),
+                    ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(
+                            _isEditing ? l10n.editOrder : "Naya Order",
+                            style: AppTypography.display(
+                              size: 16,
+                              weight: FontWeight.w700,
+                              color: darzi.ink,
+                            ),
+                          ),
+                          Text(
+                            "آرڈر درج کریں",
+                            style: AppTypography.urdu(
+                              size: 13,
+                              color: darzi.brass,
+                              weight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 38),
+                  ],
+                ),
               ),
-              const SizedBox(height: 16),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                  children: [
+                    _buildCustomerPicker(context),
+                    const SizedBox(height: 16),
+                    if (_selectedCustomerId != null && _measurements.isEmpty) ...[
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context)
+                              .pushNamed(
+                                "/measurement/form",
+                                arguments: {"customerId": _selectedCustomerId!},
+                              )
+                              .then((_) {
+                                _loadMeasurements(_selectedCustomerId!);
+                              });
+                        },
+                        icon: const Icon(Icons.add_rounded),
+                        label: Text(l10n.addMeasurement),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    _buildGarmentTypePicker(context),
+                    const SizedBox(height: 16),
+                    if (_measurements.isNotEmpty) ...[
+                      _buildMeasurementPicker(context),
+                      const SizedBox(height: 16),
+                    ],
+                    AppTextField(
+                      label: "${l10n.fabricDetails} (${l10n.optional})",
+                      controller: _fabricCtrl,
+                      prefixIcon: const Icon(Iconsax.colorfilter, size: 20),
+                    ),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      label: "${l10n.designNotes} (${l10n.optional})",
+                      controller: _notesCtrl,
+                      prefixIcon: const Icon(Iconsax.note_1, size: 20),
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Design photos",
+                      style: AppTypography.ui(
+                        size: 12,
+                        weight: FontWeight.w600,
+                        color: darzi.muted,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    PhotoPickerWidget(
+                      photoPaths: _photoPaths,
+                      onPhotoAdded: (path) {
+                        setState(() => _photoPaths.add(path));
+                      },
+                      onPhotoRemoved: (index) {
+                        setState(() => _photoPaths.removeAt(index));
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        "Rush · Eid / Shaadi",
+                        style: AppTypography.ui(
+                          size: 14,
+                          weight: FontWeight.w600,
+                          color: darzi.ink,
+                        ),
+                      ),
+                      subtitle: Text(
+                        "Urgent delivery mark karein",
+                        style: AppTypography.ui(size: 11, color: darzi.muted),
+                      ),
+                      value: _isRush,
+                      activeThumbColor: AppColors.crimson,
+                      onChanged: (v) => setState(() => _isRush = v),
+                    ),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      label: l10n.quantity,
+                      controller: _quantityCtrl,
+                      keyboardType: TextInputType.number,
+                      prefixIcon: const Icon(Iconsax.box_1, size: 20),
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      validator: (v) =>
+                          v == null || v.isEmpty ? l10n.requiredField : null,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildStaffPicker(context),
+                    const SizedBox(height: 16),
+                    _buildDatePickers(context),
+                    const SizedBox(height: 16),
+                    _buildPaymentSection(context),
+                    const SizedBox(height: 16),
+                    _buildBaqayaPreview(context),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+                decoration: BoxDecoration(
+                  color: darzi.surface,
+                  border: Border(top: BorderSide(color: darzi.line)),
+                ),
+                child: DarziButton(
+                  label: l10n.save,
+                  icon: Icons.check_rounded,
+                  onPressed: _onSave,
+                ),
+              ),
             ],
-            _buildGarmentTypePicker(context),
-            const SizedBox(height: 16),
-            if (_measurements.isNotEmpty) ...[
-              _buildMeasurementPicker(context),
-              const SizedBox(height: 16),
-            ],
-            AppTextField(
-              label: "${l10n.fabricDetails} (${l10n.optional})",
-              controller: _fabricCtrl,
-              prefixIcon: const Icon(Iconsax.colorfilter, size: 20),
-            ),
-            const SizedBox(height: 16),
-            AppTextField(
-              label: "${l10n.designNotes} (${l10n.optional})",
-              controller: _notesCtrl,
-              prefixIcon: const Icon(Iconsax.note_1, size: 20),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 16),
-            AppTextField(
-              label: l10n.quantity,
-              controller: _quantityCtrl,
-              keyboardType: TextInputType.number,
-              prefixIcon: const Icon(Iconsax.box_1, size: 20),
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: (v) =>
-                  v == null || v.isEmpty ? l10n.requiredField : null,
-            ),
-            const SizedBox(height: 16),
-            _buildStaffPicker(context),
-            const SizedBox(height: 16),
-            _buildDatePickers(context),
-            const SizedBox(height: 16),
-            _buildPaymentSection(context),
-            const SizedBox(height: 32),
-            AppButton(
-              label: l10n.save,
-              icon: Iconsax.tick_circle,
-              onPressed: _onSave,
-            ),
-            const SizedBox(height: 16),
-          ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildBaqayaPreview(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.pine,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            "Baqaya",
+            style: AppTypography.urdu(
+              size: 15,
+              color: const Color(0xFFC4D5D1),
+            ),
+          ),
+          Text(
+            "${AppConstants.currencySymbol} ${_baqayaPreview.toStringAsFixed(0)}",
+            style: AppTypography.mono(
+              size: 20,
+              weight: FontWeight.w700,
+              color: _baqayaPreview > 0
+                  ? AppColors.brassSoft
+                  : const Color(0xFFEEF4F2),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1033,6 +1033,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Completed Work'**
   String get completedWork;
+
+  /// No description provided for @navOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get navOrders;
+
+  /// No description provided for @navCustomers.
+  ///
+  /// In en, this message translates to:
+  /// **'Grahak'**
+  String get navCustomers;
+
+  /// No description provided for @navLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'Khata'**
+  String get navLedger;
+
+  /// No description provided for @navMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Aur'**
+  String get navMore;
 }
 
 class _AppLocalizationsDelegate

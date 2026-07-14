@@ -167,5 +167,10 @@
   "markAsPaid": "ادائیگی مارک کریں",
   "paymentPending": "بقایا اجرت",
   "paymentReceived": "وصول شدہ اجرت",
-  "completedWork": "مکمل شدہ کام"
+  "completedWork": "مکمل شدہ کام",
+
+  "navOrders": "آرڈرز",
+  "navCustomers": "گاہک",
+  "navLedger": "کھاتہ",
+  "navMore": "اور"
 }

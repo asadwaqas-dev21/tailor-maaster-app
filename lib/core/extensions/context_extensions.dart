@@ -21,6 +21,8 @@ extension ContextExtensions on BuildContext {
 
   bool get isUrdu => Localizations.localeOf(this).languageCode == "ur";
 
+  bool get isRtl => Directionality.of(this) == TextDirection.rtl;
+
   bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
 
   void showSnackBar(String message, {bool isError = false}) {

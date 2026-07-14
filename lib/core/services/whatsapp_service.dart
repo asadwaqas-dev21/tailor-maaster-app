@@ -2,13 +2,13 @@ import "package:flutter/foundation.dart";
 import "package:tailor_app/core/constants/app_constants.dart";
 import "package:tailor_app/core/extensions/date_extensions.dart";
 import "package:tailor_app/core/extensions/string_extensions.dart";
+import "package:tailor_app/core/services/shop_profile.dart";
 import "package:tailor_app/domain/entities/order.dart";
 import "package:url_launcher/url_launcher.dart";
 
 class WhatsAppService {
   WhatsAppService._();
 
-  /// Send order confirmation receipt via WhatsApp
   static Future<void> sendOrderConfirmation({
     required String phone,
     required Order order,
@@ -17,7 +17,6 @@ class WhatsAppService {
     await _openWhatsApp(phone: phone, message: message);
   }
 
-  /// Send "Ready for Pickup" notification via WhatsApp
   static Future<void> sendReadyForPickup({
     required String phone,
     required Order order,
@@ -26,50 +25,68 @@ class WhatsAppService {
     await _openWhatsApp(phone: phone, message: message);
   }
 
-  /// Build order confirmation message
   static String _buildOrderConfirmation(Order order) {
+    final shop = ShopProfile.load();
     final buffer = StringBuffer();
-    buffer.writeln("✂️ *Darzi - Order Confirmation*");
+    buffer.writeln("✂️ *${shop.displayName} - Order Confirmation*");
     buffer.writeln("━━━━━━━━━━━━━━━━━━━");
+    if (order.tokenCode.isNotEmpty || order.displayToken.isNotEmpty) {
+      buffer.writeln("🎫 *Token:* ${order.displayToken}");
+    }
     buffer.writeln("👤 *Customer:* ${order.customerName}");
     buffer.writeln("👔 *Garment:* ${order.garmentType.snakeToTitle}");
     buffer.writeln("📦 *Quantity:* ${order.quantity}");
     buffer.writeln("");
-    buffer.writeln("💰 *Total:* ${AppConstants.currencySymbol} ${order.totalAmount.toStringAsFixed(0)}");
-    buffer.writeln("💵 *Advance:* ${AppConstants.currencySymbol} ${order.advanceAmount.toStringAsFixed(0)}");
-    buffer.writeln("📊 *Remaining:* ${AppConstants.currencySymbol} ${order.remainingAmount.toStringAsFixed(0)}");
+    buffer.writeln(
+      "💰 *Total:* ${AppConstants.currencySymbol} ${order.totalAmount.toStringAsFixed(0)}",
+    );
+    buffer.writeln(
+      "💵 *Advance:* ${AppConstants.currencySymbol} ${order.advanceAmount.toStringAsFixed(0)}",
+    );
+    buffer.writeln(
+      "📊 *Baqaya:* ${AppConstants.currencySymbol} ${order.remainingAmount.toStringAsFixed(0)}",
+    );
     buffer.writeln("");
-    buffer.writeln("📅 *Order Date:* ${order.orderDate.formatted}");
-    buffer.writeln("📅 *Delivery Date:* ${order.deliveryDate.formatted}");
+    buffer.writeln("📅 *Order:* ${order.orderDate.formatted}");
+    buffer.writeln("📅 *Delivery:* ${order.deliveryDate.formatted}");
     if (order.fabricDetails != null && order.fabricDetails!.isNotEmpty) {
       buffer.writeln("🧵 *Fabric:* ${order.fabricDetails}");
     }
+    if (shop.phone.isNotEmpty) {
+      buffer.writeln("");
+      buffer.writeln("📞 ${shop.phone}");
+    }
     buffer.writeln("");
-    buffer.writeln("Shukriya — Darzi 🙏");
+    buffer.writeln("Shukriya — ${shop.displayName}");
     return buffer.toString();
   }
 
-  /// Build ready for pickup message
   static String _buildReadyForPickup(Order order) {
+    final shop = ShopProfile.load();
     final buffer = StringBuffer();
-    buffer.writeln("✅ *Darzi — Ready hai*");
+    buffer.writeln("✅ *${shop.displayName} — Ready hai*");
     buffer.writeln("━━━━━━━━━━━━━━━━━━━");
     buffer.writeln("Assalam-o-alaikum ${order.customerName},");
     buffer.writeln("");
-    buffer.writeln("Aapka ${order.garmentType.snakeToTitle} ready hai! 🎉");
+    buffer.writeln("Aapka ${order.garmentType.snakeToTitle} ready hai!");
+    buffer.writeln("🎫 Token: ${order.displayToken}");
     buffer.writeln("");
     if (order.remainingAmount > 0) {
-      buffer.writeln("📊 *Baqaya:* ${AppConstants.currencySymbol} ${order.remainingAmount.toStringAsFixed(0)}");
+      buffer.writeln(
+        "📊 *Baqaya:* ${AppConstants.currencySymbol} ${order.remainingAmount.toStringAsFixed(0)}",
+      );
       buffer.writeln("");
     }
     buffer.writeln("Meherbani karke dukaan se le jayein.");
+    if (shop.address.isNotEmpty) {
+      buffer.writeln("📍 ${shop.address}");
+    }
     buffer.writeln("");
-    buffer.writeln("Shukriya! 🙏");
-    buffer.writeln("*Darzi*");
+    buffer.writeln("Shukriya!");
+    buffer.writeln("*${shop.displayName}*");
     return buffer.toString();
   }
 
-  /// Open WhatsApp with pre-filled message
   static Future<void> _openWhatsApp({
     required String phone,
     required String message,

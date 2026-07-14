@@ -72,8 +72,50 @@ class AppTypography {
         fontSize: size,
         fontWeight: weight,
         color: color,
-        height: height,
+        height: height ?? 1.75,
       );
+
+  /// Locale-aware UI label (Nastaliq when Urdu is active).
+  static TextStyle labelOf(
+    BuildContext context, {
+    double size = 14,
+    FontWeight weight = FontWeight.w400,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+  }) {
+    if (Localizations.localeOf(context).languageCode == "ur") {
+      return urdu(size: size, weight: weight, color: color, height: height);
+    }
+    return ui(
+      size: size,
+      weight: weight,
+      color: color,
+      letterSpacing: letterSpacing,
+      height: height,
+    );
+  }
+
+  /// Locale-aware display/title style.
+  static TextStyle titleOf(
+    BuildContext context, {
+    double size = 24,
+    FontWeight weight = FontWeight.w700,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+  }) {
+    if (Localizations.localeOf(context).languageCode == "ur") {
+      return urdu(size: size, weight: weight, color: color, height: height);
+    }
+    return display(
+      size: size,
+      weight: weight,
+      color: color,
+      letterSpacing: letterSpacing,
+      height: height,
+    );
+  }
 
   static TextTheme get textTheme {
     return TextTheme(

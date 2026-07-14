@@ -42,7 +42,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
               child: Row(
                 children: [
                   DarziIconButton(
-                    icon: Icons.chevron_left_rounded,
+                    icon: Icons.arrow_back_rounded,
                     onTap: () => Navigator.of(context).pop(),
                   ),
                   Expanded(
@@ -82,7 +82,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   ),
                   ...OrderStatus.values.map(
                     (s) => Padding(
-                      padding: const EdgeInsets.only(left: 7),
+                      padding: const EdgeInsetsDirectional.only(start: 7),
                       child: _FilterChip(
                         label: s.labelEn,
                         on: _filter == s,

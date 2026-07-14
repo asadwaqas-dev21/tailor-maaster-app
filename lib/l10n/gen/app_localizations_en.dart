@@ -485,4 +485,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get completedWork => 'Completed Work';
+
+  @override
+  String get navOrders => 'Orders';
+
+  @override
+  String get navCustomers => 'Grahak';
+
+  @override
+  String get navLedger => 'Khata';
+
+  @override
+  String get navMore => 'Aur';
 }

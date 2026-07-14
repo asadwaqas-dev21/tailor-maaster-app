@@ -1,4 +1,5 @@
 import "package:equatable/equatable.dart";
+import "package:tailor_app/domain/entities/order.dart";
 import "package:tailor_app/presentation/blocs/report/report_event.dart";
 
 class ChartDataPoint extends Equatable {
@@ -33,6 +34,7 @@ class ReportLoaded extends ReportState {
   final double totalRemaining;
   final int totalOrdersCompleted;
   final List<ChartDataPoint> chartData;
+  final List<Order> baqayaOrders;
 
   const ReportLoaded({
     required this.period,
@@ -41,6 +43,7 @@ class ReportLoaded extends ReportState {
     required this.totalRemaining,
     required this.totalOrdersCompleted,
     required this.chartData,
+    required this.baqayaOrders,
   });
 
   @override
@@ -51,6 +54,7 @@ class ReportLoaded extends ReportState {
         totalRemaining,
         totalOrdersCompleted,
         chartData,
+        baqayaOrders,
       ];
 }
 

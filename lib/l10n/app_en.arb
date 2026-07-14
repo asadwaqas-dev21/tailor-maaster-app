@@ -167,5 +167,10 @@
   "markAsPaid": "Mark as Paid",
   "paymentPending": "Payment Pending",
   "paymentReceived": "Payment Received",
-  "completedWork": "Completed Work"
+  "completedWork": "Completed Work",
+
+  "navOrders": "Orders",
+  "navCustomers": "Grahak",
+  "navLedger": "Khata",
+  "navMore": "Aur"
 }

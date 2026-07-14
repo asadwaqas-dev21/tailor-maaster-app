@@ -1,11 +1,13 @@
 import "package:flutter/material.dart";
 import "package:iconsax_flutter/iconsax_flutter.dart";
 import "package:tailor_app/app/theme/app_colors.dart";
+import "package:tailor_app/app/theme/app_typography.dart";
 import "package:tailor_app/core/extensions/context_extensions.dart";
 import "package:tailor_app/core/extensions/date_extensions.dart";
+import "package:tailor_app/core/widgets/darzi_widgets.dart";
+import "package:tailor_app/core/widgets/empty_state.dart";
 import "package:tailor_app/data/repositories/order_repository_impl.dart";
 import "package:tailor_app/domain/entities/order.dart";
-import "package:tailor_app/core/widgets/empty_state.dart";
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -49,7 +51,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
         } else if (difference == 0) {
           todayList.add(order);
         } else if (difference <= 3) {
-          // Show next 3 days of deliveries as upcoming
           upcoming.add(order);
         }
       }
@@ -68,70 +69,115 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final darzi = context.darzi;
     final hasNotifications =
         _overdueOrders.isNotEmpty ||
         _todayOrders.isNotEmpty ||
         _upcomingOrders.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.notifications)),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : !hasNotifications
-          ? Center(
-              child: EmptyState(
-                title: l10n.noNotifications,
-                subtitle: l10n.noNotificationsSubtitle,
-                icon: Iconsax.notification_status,
+      backgroundColor: darzi.scaffold,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+              child: Row(
+                children: [
+                  DarziIconButton(
+                    icon: Icons.arrow_back_rounded,
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          "Alerts",
+                          textAlign: TextAlign.center,
+                          style: AppTypography.display(
+                            size: 16,
+                            weight: FontWeight.w700,
+                            color: darzi.ink,
+                          ),
+                        ),
+                        Text(
+                          "Deliveries",
+                          textAlign: TextAlign.center,
+                          style: AppTypography.ui(size: 11, color: darzi.muted),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 38),
+                ],
               ),
-            )
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                if (_overdueOrders.isNotEmpty) ...[
-                  _buildHeader(l10n.overdueDeliveries, AppColors.danger),
-                  const SizedBox(height: 8),
-                  ..._overdueOrders.map(
-                    (o) => _buildNotificationCard(
-                      o,
-                      l10n.overdueReminder,
-                      AppColors.danger,
-                      Iconsax.info_circle,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-                if (_todayOrders.isNotEmpty) ...[
-                  _buildHeader(l10n.dueToday, AppColors.info),
-                  const SizedBox(height: 8),
-                  ..._todayOrders.map(
-                    (o) => _buildNotificationCard(
-                      o,
-                      l10n.deliveryDueToday,
-                      AppColors.info,
-                      Iconsax.clock,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-                if (_upcomingOrders.isNotEmpty) ...[
-                  _buildHeader(l10n.upcomingDeliveries, AppColors.warning),
-                  const SizedBox(height: 8),
-                  ..._upcomingOrders.map(
-                    (o) => _buildNotificationCard(
-                      o,
-                      l10n.upcomingDelivery,
-                      AppColors.warning,
-                      Iconsax.calendar_1,
-                    ),
-                  ),
-                ],
-              ],
             ),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : !hasNotifications
+                  ? Center(
+                      child: EmptyState(
+                        title: l10n.noNotifications,
+                        subtitle: l10n.noNotificationsSubtitle,
+                        icon: Iconsax.notification_status,
+                      ),
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                      children: [
+                        if (_overdueOrders.isNotEmpty) ...[
+                          _buildHeader(l10n.overdueDeliveries, AppColors.danger),
+                          const SizedBox(height: 8),
+                          ..._overdueOrders.map(
+                            (o) => _buildNotificationCard(
+                              o,
+                              l10n.overdueReminder,
+                              AppColors.danger,
+                              Iconsax.info_circle,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                        if (_todayOrders.isNotEmpty) ...[
+                          _buildHeader(l10n.dueToday, AppColors.info),
+                          const SizedBox(height: 8),
+                          ..._todayOrders.map(
+                            (o) => _buildNotificationCard(
+                              o,
+                              l10n.deliveryDueToday,
+                              AppColors.info,
+                              Iconsax.clock,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                        if (_upcomingOrders.isNotEmpty) ...[
+                          _buildHeader(
+                            l10n.upcomingDeliveries,
+                            AppColors.warning,
+                          ),
+                          const SizedBox(height: 8),
+                          ..._upcomingOrders.map(
+                            (o) => _buildNotificationCard(
+                              o,
+                              l10n.upcomingDelivery,
+                              AppColors.warning,
+                              Iconsax.calendar_1,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildHeader(String title, Color color) {
+    final darzi = context.darzi;
     return Row(
       children: [
         Container(
@@ -145,8 +191,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
         const SizedBox(width: 8),
         Text(
           title,
-          style: context.theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
+          style: AppTypography.display(
+            size: 14,
+            weight: FontWeight.w600,
+            color: darzi.ink,
           ),
         ),
       ],
@@ -159,58 +207,90 @@ class _NotificationScreenState extends State<NotificationScreen> {
     Color color,
     IconData icon,
   ) {
-    final theme = context.theme;
+    final darzi = context.darzi;
     final l10n = context.l10n;
     final relativeTime = order.deliveryDate.relative;
-
-    // Format the order ID to first 8 chars uppercase
-    final formattedId = order.id.length >= 8
-        ? order.id.substring(0, 8).toUpperCase()
-        : order.id.toUpperCase();
-
-    // Localized body
     final body = l10n.notificationBody(
-      formattedId,
+      order.garmentType.replaceAll("_", " "),
+      order.displayToken,
       order.customerName,
-      order.garmentType.replaceAll('_', ' '),
     );
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.12),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        title: Row(
-          children: [
-            Text(
-              title,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              relativeTime,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(body, style: theme.textTheme.bodyMedium),
-        ),
+      decoration: BoxDecoration(
+        color: darzi.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: darzi.line),
+      ),
+      child: InkWell(
         onTap: () {
           Navigator.of(context)
               .pushNamed("/order/detail", arguments: order.id)
               .then((_) => _loadNotifications());
         },
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: AppTypography.ui(
+                              size: 13,
+                              weight: FontWeight.w700,
+                              color: color,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          relativeTime,
+                          style: AppTypography.mono(
+                            size: 11,
+                            weight: FontWeight.w600,
+                            color: color,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      body,
+                      style: AppTypography.ui(size: 12, color: darzi.muted),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      "#${order.displayToken}",
+                      style: AppTypography.mono(
+                        size: 11,
+                        weight: FontWeight.w700,
+                        color: darzi.brass,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

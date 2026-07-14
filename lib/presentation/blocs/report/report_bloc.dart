@@ -87,6 +87,11 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
           .map((e) => ChartDataPoint(e.key, e.value))
           .toList();
 
+      final baqayaOrders = allOrders
+          .where((o) => o.remainingAmount > 0.01)
+          .toList()
+        ..sort((a, b) => b.remainingAmount.compareTo(a.remainingAmount));
+
       emit(
         ReportLoaded(
           period: event.period,
@@ -95,6 +100,7 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
           totalRemaining: totalRemaining,
           totalOrdersCompleted: totalOrdersCompleted,
           chartData: chartData,
+          baqayaOrders: baqayaOrders,
         ),
       );
     } catch (e) {

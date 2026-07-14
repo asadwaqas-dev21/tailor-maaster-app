@@ -1,15 +1,17 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:iconsax_flutter/iconsax_flutter.dart";
+import "package:tailor_app/app/theme/app_typography.dart";
 import "package:tailor_app/core/constants/app_constants.dart";
 import "package:tailor_app/core/enums/staff_role.dart";
 import "package:tailor_app/core/extensions/context_extensions.dart";
+import "package:tailor_app/core/services/hive_service.dart";
+import "package:tailor_app/core/services/shop_profile.dart";
+import "package:tailor_app/core/widgets/darzi_widgets.dart";
 import "package:tailor_app/data/repositories/staff_repository_impl.dart";
 import "package:tailor_app/presentation/blocs/settings/settings_bloc.dart";
 import "package:tailor_app/presentation/blocs/settings/settings_event.dart";
 import "package:tailor_app/presentation/blocs/settings/settings_state.dart";
-
-import "package:tailor_app/core/services/hive_service.dart";
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -24,17 +26,22 @@ class SettingsScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            "No stitchers found. Please add a stitcher first in the Staff tab.",
+            "No stitchers found. Please add a stitcher first in Settings → Staff / Silai team.",
           ),
         ),
       );
       return;
     }
 
+    final darzi = context.darzi;
+
     showModalBottomSheet(
       context: context,
+      backgroundColor: darzi.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) {
-        final theme = context.theme;
         final l10n = context.l10n;
         return SafeArea(
           child: Column(
@@ -44,19 +51,30 @@ class SettingsScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Text(
                   l10n.selectStitcher,
-                  style: theme.textTheme.titleMedium,
+                  style: AppTypography.ui(
+                    size: 16,
+                    weight: FontWeight.w600,
+                    color: darzi.ink,
+                  ),
                 ),
               ),
-              const Divider(height: 1),
-              Expanded(
+              Divider(height: 1, color: darzi.line),
+              Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
                   itemCount: staffList.length,
                   itemBuilder: (c, index) {
                     final staff = staffList[index];
                     return ListTile(
-                      leading: const Icon(Iconsax.user),
-                      title: Text(staff.name),
+                      leading: DarziAvatar(name: staff.name, size: 36),
+                      title: Text(
+                        staff.name,
+                        style: AppTypography.ui(
+                          size: 14,
+                          weight: FontWeight.w500,
+                          color: darzi.ink,
+                        ),
+                      ),
                       onTap: () {
                         context.read<SettingsBloc>().add(
                           SwitchRole(
@@ -81,21 +99,40 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final theme = context.theme;
+    final darzi = context.darzi;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.settings)),
-      body: BlocBuilder<SettingsBloc, SettingsState>(
-        builder: (context, state) {
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              _buildSectionTitle(theme, l10n.activeProfile),
-              const SizedBox(height: 8),
-              Card(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
+      backgroundColor: darzi.scaffold,
+      body: SafeArea(
+        child: BlocBuilder<SettingsBloc, SettingsState>(
+          builder: (context, state) {
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Aur",
+                      style: AppTypography.display(
+                        size: 22,
+                        weight: FontWeight.w700,
+                        color: darzi.ink,
+                      ),
+                    ),
+                    Text(
+                      "Settings · profile & preferences",
+                      style: AppTypography.ui(
+                        size: 12,
+                        color: darzi.muted,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _SectionLabel(title: l10n.activeProfile),
+                const SizedBox(height: 8),
+                _DarziPanel(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -104,7 +141,11 @@ class SettingsScreen extends StatelessWidget {
                         children: [
                           Text(
                             l10n.userRole,
-                            style: theme.textTheme.titleSmall,
+                            style: AppTypography.ui(
+                              size: 13,
+                              weight: FontWeight.w600,
+                              color: darzi.ink,
+                            ),
                           ),
                           SegmentedButton<String>(
                             segments: [
@@ -133,22 +174,27 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       if (state.userRole == "stitcher" &&
                           state.selectedStitcherName != null) ...[
-                        const Divider(height: 24),
+                        Divider(height: 24, color: darzi.line),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               l10n.stitcher,
-                              style: theme.textTheme.titleSmall,
+                              style: AppTypography.ui(
+                                size: 13,
+                                weight: FontWeight.w600,
+                                color: darzi.ink,
+                              ),
                             ),
                             TextButton.icon(
                               onPressed: () => _showStitcherSelector(context),
-                              icon: const Icon(Iconsax.user, size: 16),
+                              icon: Icon(Iconsax.user, size: 16, color: darzi.brass),
                               label: Text(
                                 state.selectedStitcherName!,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.primary,
-                                  fontWeight: FontWeight.w600,
+                                style: AppTypography.ui(
+                                  size: 13,
+                                  weight: FontWeight.w600,
+                                  color: darzi.brass,
                                 ),
                               ),
                             ),
@@ -158,112 +204,349 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              _buildSectionTitle(theme, l10n.settings),
-              const SizedBox(height: 8),
-              Card(
-                margin: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    SwitchListTile(
-                      secondary: Icon(
-                        state.isDarkMode ? Iconsax.moon : Iconsax.sun_1,
-                        color: theme.colorScheme.primary,
-                      ),
-                      title: Text(
-                        l10n.darkMode,
-                        style: theme.textTheme.titleSmall,
-                      ),
-                      value: state.isDarkMode,
-                      onChanged: (_) {
-                        context.read<SettingsBloc>().add(const ToggleTheme());
-                      },
+                const SizedBox(height: 20),
+                const _ShopProfileCard(),
+                if (state.isOwner) ...[
+                  const SizedBox(height: 20),
+                  _SectionLabel(title: "Team"),
+                  const SizedBox(height: 8),
+                  _DarziPanel(
+                    child: _SettingsNavTile(
+                      icon: Iconsax.people,
+                      title: "Staff / Silai team",
+                      subtitle: "Add & manage silai workers",
+                      onTap: () => Navigator.pushNamed(context, "/staff/list"),
                     ),
-                    const Divider(height: 1, indent: 56),
-                    ListTile(
-                      leading: Icon(
-                        Iconsax.language_circle,
-                        color: theme.colorScheme.primary,
-                      ),
-                      title: Text(
-                        l10n.language,
-                        style: theme.textTheme.titleSmall,
-                      ),
-                      trailing: SegmentedButton<String>(
-                        segments: [
-                          ButtonSegment(value: "en", label: Text(l10n.english)),
-                          ButtonSegment(value: "ur", label: Text(l10n.urdu)),
-                        ],
-                        selected: {state.locale.languageCode},
-                        onSelectionChanged: (selected) {
-                          context.read<SettingsBloc>().add(
-                            ChangeLocale(Locale(selected.first)),
-                          );
+                  ),
+                ],
+                const SizedBox(height: 20),
+                _SectionLabel(title: l10n.settings),
+                const SizedBox(height: 8),
+                _DarziPanel(
+                  child: Column(
+                    children: [
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        secondary: Icon(
+                          state.isDarkMode ? Iconsax.moon : Iconsax.sun_1,
+                          color: darzi.brass,
+                        ),
+                        title: Text(
+                          l10n.darkMode,
+                          style: AppTypography.ui(
+                            size: 13,
+                            weight: FontWeight.w600,
+                            color: darzi.ink,
+                          ),
+                        ),
+                        value: state.isDarkMode,
+                        onChanged: (_) {
+                          context.read<SettingsBloc>().add(const ToggleTheme());
                         },
-                        style: const ButtonStyle(
-                          visualDensity: VisualDensity.compact,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      Divider(height: 1, indent: 56, color: darzi.line),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          Iconsax.language_circle,
+                          color: darzi.brass,
+                        ),
+                        title: Text(
+                          l10n.language,
+                          style: AppTypography.ui(
+                            size: 13,
+                            weight: FontWeight.w600,
+                            color: darzi.ink,
+                          ),
+                        ),
+                        trailing: SegmentedButton<String>(
+                          segments: [
+                            ButtonSegment(value: "en", label: Text(l10n.english)),
+                            ButtonSegment(value: "ur", label: Text(l10n.urdu)),
+                          ],
+                          selected: {state.locale.languageCode},
+                          onSelectionChanged: (selected) {
+                            context.read<SettingsBloc>().add(
+                              ChangeLocale(Locale(selected.first)),
+                            );
+                          },
+                          style: const ButtonStyle(
+                            visualDensity: VisualDensity.compact,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              _buildSectionTitle(theme, l10n.smtpSettings),
-              const SizedBox(height: 8),
-              const SmtpSettingsCard(),
-              const SizedBox(height: 24),
-              _buildSectionTitle(theme, l10n.appInfo),
-              const SizedBox(height: 8),
-              Card(
-                margin: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Icon(
-                        Iconsax.info_circle,
-                        color: theme.colorScheme.primary,
+                const SizedBox(height: 20),
+                _SectionLabel(title: l10n.smtpSettings),
+                const SizedBox(height: 8),
+                const SmtpSettingsCard(),
+                const SizedBox(height: 20),
+                _SectionLabel(title: l10n.appInfo),
+                const SizedBox(height: 8),
+                _DarziPanel(
+                  child: Column(
+                    children: [
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          Iconsax.info_circle,
+                          color: darzi.brass,
+                        ),
+                        title: Text(
+                          AppConstants.appName,
+                          style: AppTypography.ui(
+                            size: 13,
+                            weight: FontWeight.w600,
+                            color: darzi.ink,
+                          ),
+                        ),
+                        subtitle: Text(
+                          "Professional Tailor Management",
+                          style: AppTypography.ui(
+                            size: 12,
+                            color: darzi.muted,
+                          ),
+                        ),
                       ),
-                      title: Text(
-                        AppConstants.appName,
-                        style: theme.textTheme.titleSmall,
+                      Divider(height: 1, indent: 56, color: darzi.line),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Iconsax.code, color: darzi.brass),
+                        title: Text(
+                          l10n.version,
+                          style: AppTypography.ui(
+                            size: 13,
+                            weight: FontWeight.w600,
+                            color: darzi.ink,
+                          ),
+                        ),
+                        trailing: Text(
+                          AppConstants.appVersion,
+                          style: AppTypography.mono(
+                            size: 12,
+                            color: darzi.muted,
+                          ),
+                        ),
                       ),
-                      subtitle: Text(
-                        "Professional Tailor Management",
-                        style: theme.textTheme.bodySmall,
-                      ),
-                    ),
-                    const Divider(height: 1, indent: 56),
-                    ListTile(
-                      leading: Icon(
-                        Iconsax.code,
-                        color: theme.colorScheme.primary,
-                      ),
-                      title: Text(
-                        l10n.version,
-                        style: theme.textTheme.titleSmall,
-                      ),
-                      trailing: Text(
-                        AppConstants.appVersion,
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String title;
+
+  const _SectionLabel({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: AppTypography.ui(
+        size: 13,
+        weight: FontWeight.w600,
+        color: context.darzi.muted,
+      ),
+    );
+  }
+}
+
+class _DarziPanel extends StatelessWidget {
+  final Widget child;
+
+  const _DarziPanel({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final darzi = context.darzi;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: darzi.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: darzi.line),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _SettingsNavTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _SettingsNavTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final darzi = context.darzi;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: darzi.panel,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, size: 20, color: darzi.brass),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTypography.ui(
+                    size: 14,
+                    weight: FontWeight.w600,
+                    color: darzi.ink,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: AppTypography.ui(size: 11, color: darzi.muted),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: darzi.muted),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShopProfileCard extends StatefulWidget {
+  const _ShopProfileCard();
+
+  @override
+  State<_ShopProfileCard> createState() => _ShopProfileCardState();
+}
+
+class _ShopProfileCardState extends State<_ShopProfileCard> {
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _phoneCtrl;
+  late final TextEditingController _addressCtrl;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = ShopProfile.load();
+    _nameCtrl = TextEditingController(text: profile.name);
+    _phoneCtrl = TextEditingController(text: profile.phone);
+    _addressCtrl = TextEditingController(text: profile.address);
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _phoneCtrl.dispose();
+    _addressCtrl.dispose();
+    super.dispose();
+  }
+
+  InputDecoration _inputDecoration(BuildContext context, String label) {
+    final darzi = context.darzi;
+    return InputDecoration(
+      labelText: label,
+      labelStyle: AppTypography.ui(size: 12, color: darzi.muted),
+      filled: true,
+      fillColor: darzi.panel,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
       ),
     );
   }
 
-  Widget _buildSectionTitle(ThemeData theme, String title) {
-    return Text(
-      title,
-      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    await ShopProfile.save(
+      name: _nameCtrl.text,
+      phone: _phoneCtrl.text,
+      address: _addressCtrl.text,
+    );
+    if (mounted) {
+      setState(() => _saving = false);
+      context.showSnackBar("Dukan ki maloomat save ho gayi");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final darzi = context.darzi;
+
+    return _DarziPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Iconsax.shop, size: 20, color: darzi.brass),
+              const SizedBox(width: 8),
+              Text(
+                "Dukan ki maloomat",
+                style: AppTypography.ui(
+                  size: 14,
+                  weight: FontWeight.w600,
+                  color: darzi.ink,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _nameCtrl,
+            decoration: _inputDecoration(context, "Dukan ka naam"),
+            style: AppTypography.ui(size: 14, color: darzi.ink),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _phoneCtrl,
+            keyboardType: TextInputType.phone,
+            decoration: _inputDecoration(context, "Phone"),
+            style: AppTypography.ui(size: 14, color: darzi.ink),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _addressCtrl,
+            maxLines: 2,
+            decoration: _inputDecoration(context, "Pata / Address"),
+            style: AppTypography.ui(size: 14, color: darzi.ink),
+          ),
+          const SizedBox(height: 16),
+          DarziButton(
+            label: _saving ? "Saving…" : "Save",
+            icon: Iconsax.tick_circle,
+            onPressed: _saving ? null : _save,
+            expanded: true,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -300,7 +583,8 @@ class _SmtpSettingsCardState extends State<SmtpSettingsCard> {
     _passwordController = TextEditingController(
       text: box.get("smtpAppPassword", defaultValue: "") as String,
     );
-    _sendAutomatically = box.get("sendEmailsAutomatically", defaultValue: false) as bool;
+    _sendAutomatically =
+        box.get("sendEmailsAutomatically", defaultValue: false) as bool;
   }
 
   @override
@@ -322,131 +606,141 @@ class _SmtpSettingsCardState extends State<SmtpSettingsCard> {
     }
   }
 
+  InputDecoration _inputDecoration(BuildContext context, String label, {Widget? suffixIcon, IconData? prefixIcon}) {
+    final darzi = context.darzi;
+    return InputDecoration(
+      labelText: label,
+      labelStyle: AppTypography.ui(size: 12, color: darzi.muted),
+      prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 20) : null,
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: darzi.panel,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final theme = context.theme;
+    final darzi = context.darzi;
 
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Iconsax.setting_2, color: theme.colorScheme.primary),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.smtpSettings,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: darzi.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: darzi.line),
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Iconsax.setting_2, color: darzi.brass),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.smtpSettings,
+                  style: AppTypography.ui(
+                    size: 14,
+                    weight: FontWeight.w600,
+                    color: darzi.ink,
                   ),
-                ],
-              ),
-              const Divider(height: 24),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  l10n.sendAutomatically,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                value: _sendAutomatically,
-                onChanged: (val) {
-                  setState(() {
-                    _sendAutomatically = val;
-                  });
-                  HiveService.settingsBox.put("sendEmailsAutomatically", val);
-                  _saveSettings();
-                },
-              ),
-              if (_sendAutomatically) ...[
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _hostController,
-                  decoration: InputDecoration(
-                    labelText: l10n.smtpHost,
-                    prefixIcon: const Icon(Icons.dns_outlined, size: 20),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  validator: (val) => val == null || val.isEmpty ? l10n.requiredField : null,
-                  onChanged: (_) => _saveSettings(),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _portController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: l10n.smtpPort,
-                    prefixIcon: const Icon(Icons.tag, size: 20),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return l10n.requiredField;
-                    if (int.tryParse(val) == null) return l10n.invalidAmount;
-                    return null;
-                  },
-                  onChanged: (_) => _saveSettings(),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: l10n.senderEmail,
-                    prefixIcon: const Icon(Icons.email_outlined, size: 20),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return l10n.requiredField;
-                    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                    if (!emailRegex.hasMatch(val.trim())) {
-                      return l10n.invalidEmail;
-                    }
-                    return null;
-                  },
-                  onChanged: (_) => _saveSettings(),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: l10n.appPassword,
-                    prefixIcon: const Icon(Icons.lock_outline, size: 20),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Iconsax.eye_slash : Iconsax.eye,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  validator: (val) => val == null || val.isEmpty ? l10n.requiredField : null,
-                  onChanged: (_) => _saveSettings(),
                 ),
               ],
+            ),
+            Divider(height: 24, color: darzi.line),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                l10n.sendAutomatically,
+                style: AppTypography.ui(
+                  size: 13,
+                  weight: FontWeight.w500,
+                  color: darzi.ink,
+                ),
+              ),
+              value: _sendAutomatically,
+              onChanged: (val) {
+                setState(() {
+                  _sendAutomatically = val;
+                });
+                HiveService.settingsBox.put("sendEmailsAutomatically", val);
+                _saveSettings();
+              },
+            ),
+            if (_sendAutomatically) ...[
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _hostController,
+                decoration: _inputDecoration(context, l10n.smtpHost, prefixIcon: Icons.dns_outlined),
+                style: AppTypography.ui(size: 14, color: darzi.ink),
+                validator: (val) =>
+                    val == null || val.isEmpty ? l10n.requiredField : null,
+                onChanged: (_) => _saveSettings(),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _portController,
+                keyboardType: TextInputType.number,
+                decoration: _inputDecoration(context, l10n.smtpPort, prefixIcon: Icons.tag),
+                style: AppTypography.ui(size: 14, color: darzi.ink),
+                validator: (val) {
+                  if (val == null || val.isEmpty) return l10n.requiredField;
+                  if (int.tryParse(val) == null) return l10n.invalidAmount;
+                  return null;
+                },
+                onChanged: (_) => _saveSettings(),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: _inputDecoration(context, l10n.senderEmail, prefixIcon: Icons.email_outlined),
+                style: AppTypography.ui(size: 14, color: darzi.ink),
+                validator: (val) {
+                  if (val == null || val.isEmpty) return l10n.requiredField;
+                  final emailRegex =
+                      RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                  if (!emailRegex.hasMatch(val.trim())) {
+                    return l10n.invalidEmail;
+                  }
+                  return null;
+                },
+                onChanged: (_) => _saveSettings(),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                decoration: _inputDecoration(
+                  context,
+                  l10n.appPassword,
+                  prefixIcon: Icons.lock_outline,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Iconsax.eye_slash : Iconsax.eye,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
+                ),
+                style: AppTypography.ui(size: 14, color: darzi.ink),
+                validator: (val) =>
+                    val == null || val.isEmpty ? l10n.requiredField : null,
+                onChanged: (_) => _saveSettings(),
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );

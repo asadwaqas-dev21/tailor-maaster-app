@@ -6,8 +6,10 @@ import "package:tailor_app/app/theme/app_typography.dart";
 import "package:tailor_app/core/extensions/context_extensions.dart";
 import "package:tailor_app/core/constants/app_constants.dart";
 import "package:tailor_app/core/enums/order_status.dart";
+import "package:tailor_app/core/services/shop_profile.dart";
 import "package:tailor_app/core/widgets/darzi_widgets.dart";
 import "package:tailor_app/core/widgets/empty_state.dart";
+import "package:tailor_app/data/repositories/order_repository_impl.dart";
 import "package:tailor_app/presentation/blocs/dashboard/dashboard_bloc.dart";
 import "package:tailor_app/presentation/blocs/dashboard/dashboard_event.dart";
 import "package:tailor_app/presentation/blocs/dashboard/dashboard_state.dart";
@@ -15,6 +17,16 @@ import "package:tailor_app/presentation/blocs/dashboard/dashboard_state.dart";
 /// Orders home — matches Darzi mockup screen 01.
 class DashboardTab extends StatelessWidget {
   const DashboardTab({super.key});
+
+  int _overdueCount() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return OrderRepositoryImpl().getPendingOrders().where((o) {
+      final d = o.deliveryDate.toLocal();
+      final day = DateTime(d.year, d.month, d.day);
+      return day.isBefore(today);
+    }).length;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,17 +62,29 @@ class DashboardTab extends StatelessWidget {
                         SliverToBoxAdapter(
                           child: _OrdersHeader(
                             isStitcher: isStitcher,
-                            shopName: "Chughtai Tailors",
+                            shopName: ShopProfile.load().displayName,
+                            overdueCount: isStitcher ? 0 : _overdueCount(),
                           ),
                         ),
                         SliverPadding(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                           sliver: SliverList(
                             delegate: SliverChildListDelegate([
-                              if (isStitcher)
-                                _StitcherStats(state: state)
-                              else
-                                _OwnerStats(state: state),
+                              TweenAnimationBuilder<double>(
+                                tween: Tween(begin: 0, end: 1),
+                                duration: const Duration(milliseconds: 450),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, value, child) => Opacity(
+                                  opacity: value,
+                                  child: Transform.translate(
+                                    offset: Offset(0, 12 * (1 - value)),
+                                    child: child,
+                                  ),
+                                ),
+                                child: isStitcher
+                                    ? _StitcherStats(state: state)
+                                    : _OwnerStats(state: state),
+                              ),
                               const StitchDivider(),
                               _SectionHead(
                                 title: isStitcher ? "Mera kaam" : "Active orders",
@@ -102,7 +126,6 @@ class DashboardTab extends StatelessWidget {
             ),
           ];
 
-    // Prefer active (not delivered) first
     final active = orders
         .where((o) => o.status != OrderStatus.delivered)
         .toList();
@@ -141,8 +164,13 @@ class DashboardTab extends StatelessWidget {
 class _OrdersHeader extends StatelessWidget {
   final bool isStitcher;
   final String shopName;
+  final int overdueCount;
 
-  const _OrdersHeader({required this.isStitcher, required this.shopName});
+  const _OrdersHeader({
+    required this.isStitcher,
+    required this.shopName,
+    this.overdueCount = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -172,8 +200,9 @@ class _OrdersHeader extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  isStitcher ? "Mera kaam" : shopName,
-                  style: AppTypography.display(
+                  isStitcher ? context.l10n.myWork : shopName,
+                  style: AppTypography.titleOf(
+                    context,
                     size: 18,
                     weight: FontWeight.w700,
                     color: darzi.ink,
@@ -184,9 +213,39 @@ class _OrdersHeader extends StatelessWidget {
             ),
           ),
           if (!isStitcher)
-            DarziIconButton(
-              icon: Iconsax.notification,
-              onTap: () => Navigator.of(context).pushNamed("/notification"),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                DarziIconButton(
+                  icon: Iconsax.notification,
+                  onTap: () =>
+                      Navigator.of(context).pushNamed("/notification"),
+                ),
+                if (overdueCount > 0)
+                  PositionedDirectional(
+                    top: -2,
+                    end: -2,
+                    child: Container(
+                      constraints: const BoxConstraints(minWidth: 18),
+                      height: 18,
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.crimson,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: darzi.scaffold, width: 1.5),
+                      ),
+                      child: Text(
+                        overdueCount > 9 ? "9+" : "$overdueCount",
+                        style: AppTypography.ui(
+                          size: 9,
+                          weight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
         ],
       ),
@@ -296,7 +355,7 @@ class _SectionHead extends StatelessWidget {
   Widget build(BuildContext context) {
     final darzi = context.darzi;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10, left: 2, right: 2),
+      padding: const EdgeInsetsDirectional.only(bottom: 10, start: 2, end: 2),
       child: Row(
         children: [
           Text(

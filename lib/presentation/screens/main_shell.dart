@@ -139,6 +139,7 @@ class _DarziBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final darzi = context.darzi;
     if (!isOwner) {
+      final l10n = context.l10n;
       return Container(
         decoration: BoxDecoration(
           color: darzi.navBar,
@@ -151,13 +152,13 @@ class _DarziBottomNav extends StatelessWidget {
             children: [
               _NavItem(
                 icon: Iconsax.home_2,
-                label: "Orders",
+                label: l10n.navOrders,
                 active: currentIndex == 0,
                 onTap: () => onTap(0),
               ),
               _NavItem(
                 icon: Iconsax.setting_2,
-                label: "Aur",
+                label: l10n.navMore,
                 active: currentIndex == 1,
                 onTap: () => onTap(1),
               ),
@@ -167,6 +168,7 @@ class _DarziBottomNav extends StatelessWidget {
       );
     }
 
+    final l10n = context.l10n;
     return Container(
       decoration: BoxDecoration(
         color: darzi.navBar,
@@ -179,26 +181,26 @@ class _DarziBottomNav extends StatelessWidget {
           children: [
             _NavItem(
               icon: Iconsax.home_2,
-              label: "Orders",
+              label: l10n.navOrders,
               active: currentIndex == 0,
               onTap: () => onTap(0),
             ),
             _NavItem(
               icon: Iconsax.people,
-              label: "Grahak",
+              label: l10n.navCustomers,
               active: currentIndex == 1,
               onTap: () => onTap(1),
             ),
             _FabSlot(onTap: () => onTap(2)),
             _NavItem(
               icon: Iconsax.book,
-              label: "Khata",
+              label: l10n.navLedger,
               active: currentIndex == 3,
               onTap: () => onTap(3),
             ),
             _NavItem(
               icon: Iconsax.menu,
-              label: "Aur",
+              label: l10n.navMore,
               active: currentIndex == 4,
               onTap: () => onTap(4),
             ),
@@ -224,7 +226,9 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? AppColors.pine : context.darzi.muted;
+    final color = active
+        ? (context.isDarkMode ? AppColors.brassSoft : AppColors.pine)
+        : context.darzi.muted;
     return Expanded(
       child: InkWell(
         onTap: onTap,
@@ -238,7 +242,9 @@ class _NavItem extends StatelessWidget {
               const SizedBox(height: 3),
               Text(
                 label,
-                style: AppTypography.ui(
+                textAlign: TextAlign.center,
+                style: AppTypography.labelOf(
+                  context,
                   size: 9.5,
                   weight: active ? FontWeight.w600 : FontWeight.w400,
                   color: color,

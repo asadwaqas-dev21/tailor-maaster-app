@@ -135,9 +135,9 @@ class _StaffDetailScreenState extends State<StaffDetailScreen> {
                           ),
                         ),
                 ),
-                Positioned(
+                PositionedDirectional(
                   bottom: 0,
-                  right: 0,
+                  end: 0,
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(

@@ -4,6 +4,7 @@ import "package:pdf/widgets.dart" as pw;
 import "package:printing/printing.dart";
 import "package:tailor_app/core/constants/app_constants.dart";
 import "package:tailor_app/core/extensions/date_extensions.dart";
+import "package:tailor_app/core/services/shop_profile.dart";
 import "package:tailor_app/domain/entities/order.dart";
 
 class PdfService {
@@ -13,7 +14,7 @@ class PdfService {
     final pdfBytes = await _generateInvoice(order);
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => pdfBytes,
-      name: "Invoice_${order.id.substring(0, 8)}.pdf",
+      name: "Invoice_${order.displayToken}.pdf",
     );
   }
 
@@ -21,12 +22,13 @@ class PdfService {
     final pdfBytes = await _generateInvoice(order);
     await Printing.sharePdf(
       bytes: pdfBytes,
-      filename: "Invoice_${order.id.substring(0, 8)}.pdf",
+      filename: "Invoice_${order.displayToken}.pdf",
     );
   }
 
   static Future<Uint8List> _generateInvoice(Order order) async {
     final pdf = pw.Document();
+    final shop = ShopProfile.load();
 
     final ttf = await PdfGoogleFonts.interRegular();
     final ttfBold = await PdfGoogleFonts.interBold();
@@ -38,7 +40,7 @@ class PdfService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              _buildHeader(ttfBold, ttf),
+              _buildHeader(shop, ttfBold, ttf),
               pw.SizedBox(height: 20),
               _buildCustomerInfo(order, ttfBold, ttf),
               pw.SizedBox(height: 20),
@@ -46,7 +48,7 @@ class PdfService {
               pw.SizedBox(height: 20),
               _buildPaymentSummary(order, ttfBold, ttf),
               pw.Spacer(),
-              _buildFooter(ttf),
+              _buildFooter(shop, ttf),
             ],
           );
         },
@@ -56,7 +58,7 @@ class PdfService {
     return pdf.save();
   }
 
-  static pw.Widget _buildHeader(pw.Font ttfBold, pw.Font ttf) {
+  static pw.Widget _buildHeader(ShopProfile shop, pw.Font ttfBold, pw.Font ttf) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
@@ -64,21 +66,31 @@ class PdfService {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             pw.Text(
-              AppConstants.appName,
+              shop.displayName,
               style: pw.TextStyle(
                 font: ttfBold,
                 fontSize: 24,
-                color: PdfColors.indigo900,
+                color: PdfColor.fromHex("0E3B38"),
               ),
             ),
             pw.Text(
-              "Professional Tailor Management",
+              AppConstants.appTagline,
               style: pw.TextStyle(
                 font: ttf,
                 fontSize: 12,
                 color: PdfColors.grey700,
               ),
             ),
+            if (shop.phone.isNotEmpty)
+              pw.Text(
+                shop.phone,
+                style: pw.TextStyle(font: ttf, fontSize: 10, color: PdfColors.grey600),
+              ),
+            if (shop.address.isNotEmpty)
+              pw.Text(
+                shop.address,
+                style: pw.TextStyle(font: ttf, fontSize: 10, color: PdfColors.grey600),
+              ),
           ],
         ),
         pw.Text(
@@ -86,7 +98,7 @@ class PdfService {
           style: pw.TextStyle(
             font: ttfBold,
             fontSize: 24,
-            color: PdfColors.grey800,
+            color: PdfColor.fromHex("C99A3C"),
           ),
         ),
       ],
@@ -237,7 +249,7 @@ class PdfService {
     );
   }
 
-  static pw.Widget _buildFooter(pw.Font ttf) {
+  static pw.Widget _buildFooter(ShopProfile shop, pw.Font ttf) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.center,
       children: [
@@ -249,7 +261,7 @@ class PdfService {
         ),
         pw.SizedBox(height: 4),
         pw.Text(
-          "Powered by Darzi",
+          shop.displayName,
           style: pw.TextStyle(font: ttf, fontSize: 10, color: PdfColors.grey),
         ),
       ],

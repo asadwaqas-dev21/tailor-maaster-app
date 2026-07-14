@@ -79,8 +79,8 @@ class MeasuringTapeBar extends StatelessWidget {
           Positioned.fill(
             child: CustomPaint(painter: _TapeTicksPainter()),
           ),
-          Positioned(
-            left: 10,
+          PositionedDirectional(
+            start: 10,
             top: 0,
             bottom: 0,
             child: Center(
@@ -413,11 +413,13 @@ class DarziOrderCard extends StatelessWidget {
         child: Stack(
           children: [
             if (_rush)
-              Positioned(
+              PositionedDirectional(
                 top: -2,
-                right: -28,
+                end: -28,
                 child: Transform.rotate(
-                  angle: 0.785,
+                  angle: Directionality.of(context) == TextDirection.rtl
+                      ? -0.785
+                      : 0.785,
                   child: Container(
                     width: 90,
                     padding: const EdgeInsets.symmetric(vertical: 4),
@@ -527,7 +529,12 @@ class DarziIconButton extends StatelessWidget {
           color: c.iconBtn,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, size: 19, color: c.ink),
+        child: Icon(
+          icon,
+          size: 19,
+          color: c.ink,
+          matchTextDirection: true,
+        ),
       ),
     );
   }

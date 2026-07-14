@@ -484,4 +484,16 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get completedWork => 'مکمل شدہ کام';
+
+  @override
+  String get navOrders => 'آرڈرز';
+
+  @override
+  String get navCustomers => 'گاہک';
+
+  @override
+  String get navLedger => 'کھاتہ';
+
+  @override
+  String get navMore => 'اور';
 }

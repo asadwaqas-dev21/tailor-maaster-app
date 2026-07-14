@@ -2,9 +2,12 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:iconsax_flutter/iconsax_flutter.dart";
 import "package:tailor_app/app/theme/app_colors.dart";
+import "package:tailor_app/app/theme/app_typography.dart";
 import "package:tailor_app/core/constants/app_constants.dart";
+import "package:tailor_app/core/constants/measurement_fields.dart";
 import "package:tailor_app/core/extensions/context_extensions.dart";
 import "package:tailor_app/data/repositories/order_repository_impl.dart";
+import "package:tailor_app/domain/entities/order.dart";
 import "package:tailor_app/presentation/blocs/report/report_bloc.dart";
 import "package:tailor_app/presentation/blocs/report/report_event.dart";
 import "package:tailor_app/presentation/blocs/report/report_state.dart";
@@ -81,6 +84,8 @@ class _ReportScreenContent extends StatelessWidget {
                         Text("Sales Trend", style: theme.textTheme.titleMedium),
                         const SizedBox(height: 16),
                         _buildChart(context, state),
+                        const SizedBox(height: 24),
+                        _buildBaqayaSection(context, state),
                       ],
                     );
                   }
@@ -250,6 +255,106 @@ class _ReportScreenContent extends StatelessWidget {
             ],
           );
         }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildBaqayaSection(BuildContext context, ReportLoaded state) {
+    final darzi = context.darzi;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Baqaya wale",
+          style: AppTypography.display(
+            size: 16,
+            weight: FontWeight.w700,
+            color: darzi.ink,
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (state.baqayaOrders.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: darzi.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: darzi.line),
+            ),
+            child: Text(
+              "Koi baqaya nahi",
+              textAlign: TextAlign.center,
+              style: AppTypography.ui(size: 13, color: darzi.muted),
+            ),
+          )
+        else
+          ...state.baqayaOrders.map(
+            (order) => _BaqayaCard(order: order),
+          ),
+      ],
+    );
+  }
+}
+
+class _BaqayaCard extends StatelessWidget {
+  final Order order;
+
+  const _BaqayaCard({required this.order});
+
+  @override
+  Widget build(BuildContext context) {
+    final darzi = context.darzi;
+    final garment =
+        MeasurementFields.categoryLabelsEn[order.garmentType] ??
+        order.garmentType.replaceAll("_", " ");
+
+    return GestureDetector(
+      onTap: () => Navigator.of(context).pushNamed(
+        "/order/detail",
+        arguments: order.id,
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: darzi.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: darzi.line),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    order.customerName,
+                    style: AppTypography.ui(
+                      size: 14,
+                      weight: FontWeight.w600,
+                      color: darzi.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    garment,
+                    style: AppTypography.ui(size: 12, color: darzi.muted),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              "${AppConstants.currencySymbol} ${order.remainingAmount.toStringAsFixed(0)}",
+              style: AppTypography.mono(
+                size: 15,
+                weight: FontWeight.w700,
+                color: AppColors.crimson,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

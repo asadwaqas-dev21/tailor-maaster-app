@@ -106,7 +106,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               child: Row(
                 children: [
                   DarziIconButton(
-                    icon: Icons.chevron_left_rounded,
+                    icon: Icons.arrow_back_rounded,
                     onTap: () => Navigator.of(context).pop(),
                   ),
                   Expanded(
@@ -422,8 +422,8 @@ class _ProfileHeader extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       child: Stack(
         children: [
-          Positioned(
-            right: -30,
+          PositionedDirectional(
+            end: -30,
             top: -30,
             child: Container(
               width: 130,

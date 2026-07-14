@@ -139,7 +139,7 @@ class _MeasurementFormScreenState extends State<MeasurementFormScreen> {
                 child: Row(
                   children: [
                     DarziIconButton(
-                      icon: Icons.chevron_left_rounded,
+                      icon: Icons.arrow_back_rounded,
                       onTap: () => Navigator.of(context).pop(),
                     ),
                     Expanded(
