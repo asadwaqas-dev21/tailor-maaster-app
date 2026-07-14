@@ -1,5 +1,5 @@
 name: tailor_app
-description: "TailorPro - Professional Tailor Management App"
+description: "Darzi — Tailor Shop Management App"
 publish_to: 'none'
 
 version: 1.0.0+4
@@ -19,9 +19,12 @@ dependencies:
   bloc: ^9.2.1
   equatable: ^2.0.7
 
-  # Local Database
+  # Local Database (offline-first cache)
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+
+  # Backend
+  supabase_flutter: ^2.9.1
 
   # System & Utilities
   path_provider: ^2.1.6
@@ -36,7 +39,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   pdf: ^3.12.0
   printing: ^5.14.3
-  firebase_core: ^4.10.0
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -49,3 +52,6 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
+  assets:
+    - .env
+    - .env.example

@@ -5,10 +5,6 @@
 # Play Core (referenced by Flutter for deferred components, not used)
 -dontwarn com.google.android.play.core.**
 
-# Firebase
--keep class com.google.firebase.** { *; }
--dontwarn com.google.firebase.**
-
 # Hive
 -keep class ** extends com.google.protobuf.GeneratedMessageLite { *; }
 

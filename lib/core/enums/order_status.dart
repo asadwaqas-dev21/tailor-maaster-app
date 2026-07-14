@@ -55,15 +55,45 @@ extension OrderStatusExtension on OrderStatus {
   Color get color {
     switch (this) {
       case OrderStatus.pending:
-        return const Color(0xFFFF9800);
+        return const Color(0xFFA9791B);
       case OrderStatus.cutting:
-        return const Color(0xFF2196F3);
+        return const Color(0xFFA9791B);
       case OrderStatus.stitching:
-        return const Color(0xFF9C27B0);
+        return const Color(0xFF1D6F62);
       case OrderStatus.ready:
-        return const Color(0xFF4CAF50);
+        return const Color(0xFF1F7A4D);
       case OrderStatus.delivered:
-        return const Color(0xFF607D8B);
+        return const Color(0xFF0E3B38);
+    }
+  }
+
+  Color get pillBackground {
+    switch (this) {
+      case OrderStatus.pending:
+      case OrderStatus.cutting:
+        return const Color(0xFFFCF1DC);
+      case OrderStatus.stitching:
+        return const Color(0xFFE2EFEC);
+      case OrderStatus.ready:
+        return const Color(0xFFE2F3EA);
+      case OrderStatus.delivered:
+        return const Color(0xFFE2EFEC);
+    }
+  }
+
+  /// Mockup labels: Mila · Cutting · Silai · Ready · Diya
+  String get shortLabel {
+    switch (this) {
+      case OrderStatus.pending:
+        return "Mila";
+      case OrderStatus.cutting:
+        return "Cutting";
+      case OrderStatus.stitching:
+        return "Silai";
+      case OrderStatus.ready:
+        return "Ready";
+      case OrderStatus.delivered:
+        return "Diya";
     }
   }
 

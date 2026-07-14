@@ -1,11 +1,13 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = "TailorSoft";
+  static const String appName = "Darzi";
+  static const String appNameUr = "درزی";
+  static const String appTagline = "Tailor Studio";
   static const String appVersion = "1.0.0";
 
   // Currency
-  static const String currencySymbol = "₨";
+  static const String currencySymbol = "Rs";
   static const String currencyCode = "PKR";
 
   // Notification
